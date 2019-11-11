@@ -12,7 +12,7 @@ using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Shared
+namespace Microsoft.DotNet.Kusto
 {
     public static class KustoHelpers
     {

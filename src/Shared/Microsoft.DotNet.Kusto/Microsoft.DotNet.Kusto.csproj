@@ -6,8 +6,8 @@
     <TargetLatestRuntimePatch>False</TargetLatestRuntimePatch>
     <SignAssembly>false</SignAssembly>
     <LangVersion>7.1</LangVersion>
-    <RootNamespace>Microsoft.DotNet.Shared</RootNamespace>
-    <AssemblyName>Microsoft.DotNet.Shared</AssemblyName>
+    <RootNamespace>Microsoft.DotNet.Kusto</RootNamespace>
+    <AssemblyName>Microsoft.DotNet.Kusto</AssemblyName>
   </PropertyGroup>
   
   <ItemGroup>
