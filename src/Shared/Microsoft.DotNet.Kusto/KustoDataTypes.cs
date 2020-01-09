@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.DotNet.Shared
+namespace Microsoft.DotNet.Kusto
 {
     public static class KustoDataTypes
     {
@@ -11,5 +11,7 @@ namespace Microsoft.DotNet.Shared
         public const string Int = "int";
         public const string Boolean = "bool";
         public const string DateTime = "datetime";
+
+        public const string TimeSpan = "timespan";
     }
 }

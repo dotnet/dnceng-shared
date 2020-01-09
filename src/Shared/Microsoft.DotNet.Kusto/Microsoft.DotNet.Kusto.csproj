@@ -6,8 +6,8 @@
     <TargetLatestRuntimePatch>False</TargetLatestRuntimePatch>
     <SignAssembly>false</SignAssembly>
     <LangVersion>7.1</LangVersion>
-    <RootNamespace>Microsoft.DotNet.Shared</RootNamespace>
-    <AssemblyName>Microsoft.DotNet.Shared</AssemblyName>
+    <RootNamespace>Microsoft.DotNet.Kusto</RootNamespace>
+    <AssemblyName>Microsoft.DotNet.Kusto</AssemblyName>
   </PropertyGroup>
   
   <ItemGroup>
@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.1.1" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="7.0.1-preview" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />

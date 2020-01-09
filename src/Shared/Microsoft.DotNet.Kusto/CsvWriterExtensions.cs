@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.DotNet.Shared
+namespace Microsoft.DotNet.Kusto
 {
     public static class CsvWriterExtensions
     {
