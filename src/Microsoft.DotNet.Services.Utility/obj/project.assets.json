@@ -1,0 +1,34 @@
+{
+  "version": 3,
+  "targets": {},
+  "libraries": {},
+  "projectFileDependencyGroups": {},
+  "packageFolders": {
+    "C:\\Users\\dkurepa\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "restore": {
+      "projectUniqueName": "C:\\Users\\dkurepa\\source\\repos\\dotnet-dnceng-shared\\src\\Microsoft.DotNet.Services.Utility\\Microsoft.DotNet.Services.Utility.csproj",
+      "projectPath": "C:\\Users\\dkurepa\\source\\repos\\dotnet-dnceng-shared\\src\\Microsoft.DotNet.Services.Utility\\Microsoft.DotNet.Services.Utility.csproj",
+      "packagesPath": "C:\\Users\\dkurepa\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\dkurepa\\source\\repos\\dotnet-dnceng-shared\\src\\Microsoft.DotNet.Services.Utility\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\dkurepa\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://nuget.org/api/v2/": {},
+        "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json": {}
+      }
+    }
+  },
+  "logs": [
+    {
+      "code": "NU1105",
+      "level": "Error",
+      "message": "Unable to read project information for 'Microsoft.DotNet.Services.Utility': Invalid framework identifier ''."
+    }
+  ]
+}

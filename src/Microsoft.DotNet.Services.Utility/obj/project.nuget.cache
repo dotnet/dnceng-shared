@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "h+Ujl5HD9hj2ubLtYy3/pTk7Z5uPLUGLVyVnC5KjyND1NVAzekjppE6MUK2wV7Bw/E+KAR3Ikh5ghp6gnVnhxw==",
+  "success": false,
+  "projectFilePath": "C:\\Users\\dkurepa\\source\\repos\\dotnet-dnceng-shared\\src\\Microsoft.DotNet.Services.Utility\\Microsoft.DotNet.Services.Utility.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1105",
+      "level": "Error",
+      "message": "Unable to read project information for 'Microsoft.DotNet.Services.Utility': Invalid framework identifier ''."
+    }
+  ]
+}

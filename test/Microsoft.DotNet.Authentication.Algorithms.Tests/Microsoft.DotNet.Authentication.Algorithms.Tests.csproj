@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.Authentication.Algorithms\Microsoft.DotNet.Authentication.Algorithms.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Authentication.Algorithms\Microsoft.DotNet.Authentication.Algorithms.csproj" />
   </ItemGroup>
 
 </Project>

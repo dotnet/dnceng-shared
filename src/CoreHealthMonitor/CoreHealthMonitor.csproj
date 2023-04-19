@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.DotNet.ServiceFabric.ServiceHost\Microsoft.DotNet.ServiceFabric.ServiceHost.csproj" />
-    <ProjectReference Include="..\..\Shared\Microsoft.DotNet.Internal.Health\Microsoft.DotNet.Internal.Health.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Internal.Health\Microsoft.DotNet.Internal.Health.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.ServiceFabric.ServiceHost\Microsoft.DotNet.ServiceFabric.ServiceHost.csproj" />
   </ItemGroup>
 
 </Project>
