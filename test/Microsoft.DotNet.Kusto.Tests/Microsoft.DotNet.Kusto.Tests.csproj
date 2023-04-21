@@ -8,7 +8,7 @@
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.Internal.Testing.Utility\Microsoft.DotNet.Internal.Testing.Utility.csproj" />
-    <ProjectReference Include="..\Microsoft.DotNet.Kusto\Microsoft.DotNet.Kusto.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.Testing.Utility\Microsoft.DotNet.Internal.Testing.Utility.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Kusto\Microsoft.DotNet.Kusto.csproj" />
   </ItemGroup>
 </Project>
