@@ -20,7 +20,7 @@ public class DependencyRegistrationTests
                 {
                     Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "XUNIT");
                     ServiceHost.ConfigureDefaultServices(s);
-                    Program.Configure(s);
+                    CoreHealthMonitorService.Configure(s);
                 },
                 out string message,
                 additionalScopedTypes: new[] {typeof(CoreHealthMonitorService)}
