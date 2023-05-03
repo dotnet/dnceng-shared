@@ -10,8 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using JetBrains.Annotations;
+using Microsoft.DncEng.Configuration.Extensions;
 using Microsoft.DotNet.Internal.Health;
 using Microsoft.DotNet.ServiceFabric.ServiceHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -176,5 +179,12 @@ public sealed class CoreHealthMonitorService : IServiceImplementation
         }
 
         return patterns.Any(pattern => Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase));
+    }
+
+    public static void Configure(IServiceCollection services)
+    {
+        services.AddDefaultJsonConfiguration();
+        services.Configure<DriveMonitorOptions>("DriveMonitoring", ((o, s) => s.Bind(o)));
+        services.Configure<MemoryDumpOptions>("MemoryDump", (o, s) => s.Bind(o));
     }
 }
