@@ -27,7 +27,7 @@ steps:
     targetType: filePath
     filePath: eng\convert-codecoveragetoxml.ps1
     arguments: -Path "$(Build.ArtifactStagingDirectory)\TestResults" -NugetPackagesPath "$(Build.SourcesDirectory)\.packages"
-  displayName: Convert Code Coverage to XML (powershell)
+  displayName: Convert Code Coverage to XML
 
 - task: reportgenerator@5
   displayName: ReportGenerator
