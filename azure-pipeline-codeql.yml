@@ -65,22 +65,6 @@ jobs:
   - powershell: eng\set-version-parameters.ps1
     displayName: Calculate release version variables
 
-  - powershell: |
-      [xml]$manifest = Get-Content src\Maestro\MaestroApplication\ApplicationPackageRoot\ApplicationManifest.xml
-      $manifest.SelectSingleNode("/*[local-name()='ApplicationManifest']/*[local-name()='Policies']").RemoveAll()
-      $manifest.SelectSingleNode("/*[local-name()='ApplicationManifest']/*[local-name()='Principals']").RemoveAll()
-      $manifest.Save("src\Maestro\MaestroApplication\ApplicationPackageRoot\ApplicationManifest.xml")
-      git diff
-    displayName: Remove Service Fabric RunAsPolicy from MaestroApplication
-
-  - powershell: |
-      [xml]$manifest = Get-Content src\Telemetry\TelemetryApplication\ApplicationPackageRoot\ApplicationManifest.xml
-      $manifest.SelectSingleNode("/*[local-name()='ApplicationManifest']/*[local-name()='Policies']").RemoveAll()
-      $manifest.SelectSingleNode("/*[local-name()='ApplicationManifest']/*[local-name()='Principals']").RemoveAll()
-      $manifest.Save("src\Telemetry\TelemetryApplication\ApplicationPackageRoot\ApplicationManifest.xml")
-      git diff
-    displayName: Remove Service Fabric RunAsPolicy from TelemetryApplication
-
   - task: CodeQL3000Init@0
     displayName: CodeQL Initialize
 
