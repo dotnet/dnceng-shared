@@ -116,6 +116,18 @@ stages:
           displayName: Build / Publish
           condition: succeeded()
 
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+
+          - task: ComponentGovernanceComponentDetection@0
+            inputs:
+              # `.packages` directory is used by some tools running during build.
+              # By default ComponentDetection scans this directory and sometimes reports
+              # vulnerabilities for packages that are not part of the published product.
+              # We can ignore this directory because actual vulnerabilities
+              # that we are interested in will be found by the tool
+              # when scanning .csproj and package.json files.
+              ignoreDirectories: '.packages'
+
         - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
           - template: /eng/test.yaml
 
