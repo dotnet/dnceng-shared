@@ -8,8 +8,9 @@ jobs:
 - job: CodeQL
   timeoutInMinutes: 90
   pool: 
-    name: NetCore1ESPool-Internal
-    demands: ImageOverride -equals 1es-windows-2022
+    #name: NetCore1ESPool-Internal
+    #demands: ImageOverride -equals 1es-windows-2022
+    vmImage: windows-2022
   displayName: CodeQL Scan
   
   variables:
