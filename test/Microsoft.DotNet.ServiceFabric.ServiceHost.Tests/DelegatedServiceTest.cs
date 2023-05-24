@@ -115,7 +115,7 @@ public partial class DelegatedServiceTest
         (await callback.Should().ThrowAsync<OperationCanceledException>())
             .Where(e => e.CancellationToken == testData.CancellationToken.Token, "cancellation token should match");
         AssertionExtensions.Should(testData.Counter).ContainKey(nameof(WaitLoop))
-            .WhichValue.Should().Be(2, "both loops should have executed");
+            .WhoseValue.Should().Be(2, "both loops should have executed");
         testData.Logger.Error.Should().Be(0);
         testData.Logger.Warning.Should().Be(0);
     }
@@ -210,11 +210,13 @@ public partial class DelegatedServiceTest
     
 public static class NotCompleteGenericAsyncTaskAssertion
 {
-    public static async Task<AndConstraint<AsyncFunctionAssertions>> NotCompleteWithinAsync(
+    public static async Task<AndConstraint<AsyncFunctionAssertions<TTask, TAssertions>>> NotCompleteWithinAsync<TTask, TAssertions>(
         this NonGenericAsyncFunctionAssertions parentConstraint,
         TimeSpan timeSpan,
         string because = "",
         params object[] becauseArgs)
+            where TTask : Task
+            where TAssertions : AsyncFunctionAssertions<TTask, TAssertions>
     {
         Execute.Assertion.ForCondition(parentConstraint.Subject != null)
             .BecauseOf(because, becauseArgs)
@@ -235,7 +237,7 @@ public static class NotCompleteGenericAsyncTaskAssertion
         {
             timeSpan
         });
-        var andConstraint = new AndConstraint<AsyncFunctionAssertions>(parentConstraint);
+        var andConstraint = new AndConstraint<AsyncFunctionAssertions<TTask, TAssertions>>(parentConstraint as AsyncFunctionAssertions<TTask, TAssertions>);
         return andConstraint;
     }
 }
