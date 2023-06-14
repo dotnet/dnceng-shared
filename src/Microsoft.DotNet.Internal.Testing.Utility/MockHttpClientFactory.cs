@@ -153,7 +153,10 @@ public class MockHttpClientFactory : IHttpClientFactory
 
     public void VerifyAll()
     {
-        _cannedResponses.Should().AllSatisfy(response => response.Used.Should().BeTrue());
+        if (_cannedResponses.Count > 0)
+        {
+            _cannedResponses.Should().AllSatisfy(response => response.Used.Should().BeTrue());
+        }
         _unexpectedRequests.Should().BeEmpty();
     }
 }
