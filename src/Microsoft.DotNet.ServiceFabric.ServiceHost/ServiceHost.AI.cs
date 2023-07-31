@@ -18,9 +18,9 @@ namespace Microsoft.DotNet.ServiceFabric.ServiceHost;
 
 partial class ServiceHost
 {
-    private static string GetApplicationInsightsKey()
+    private static string GetApplicationConnectionString()
     {
-        string envVar = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_KEY");
+        string envVar = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_CONNECTION_STRING");
         if (string.IsNullOrEmpty(envVar))
         {
             return Guid.Empty.ToString("D");
@@ -131,7 +131,7 @@ partial class ServiceHost
         options.ApplicationVersion = Assembly.GetEntryAssembly()?
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
             .InformationalVersion ?? "42.42.42.42";
-        options.InstrumentationKey = GetApplicationInsightsKey();
+        options.ConnectionString = GetApplicationConnectionString();
         options.EnableQuickPulseMetricStream = false;
         options.EnableAdaptiveSampling = false;
         options.EnableDependencyTrackingTelemetryModule = false;
