@@ -37,7 +37,7 @@ public static class ConfigMapper
         string envVar = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_CONNECTION_STRING");
         if (string.IsNullOrEmpty(envVar))
         {
-            return Guid.Empty.ToString("D");
+            return "InstrumentationKey=00000000-0000-0000-0000-000000000000";
         }
 
         return envVar;
