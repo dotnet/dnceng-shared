@@ -60,7 +60,7 @@ public abstract class DependencyInjectedConsoleApp
                     }
                     else
                     {
-                        c.InstrumentationKey = provider.GetRequiredService<IConfiguration>()["ApplicationInsightsInstrumentationKey"] ?? "";
+                        c.ConnectionString = provider.GetRequiredService<IConfiguration>()["ApplicationInsightsConnectionString"] ?? "";
                     }
                 }
             )

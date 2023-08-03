@@ -25,16 +25,19 @@ public static class ConfigMapper
 
     private static TelemetryClient CreateTelemetryClient()
     {
-        var config = new TelemetryConfiguration(GetApplicationInsightsKey());
+        var config = new TelemetryConfiguration()
+        {
+            ConnectionString = GetApplicationConnectionString()
+        };
         return new TelemetryClient(config);
     }
 
-    private static string GetApplicationInsightsKey()
+    private static string GetApplicationConnectionString()
     {
-        string envVar = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_KEY");
+        string envVar = Environment.GetEnvironmentVariable("APPLICATION_INSIGHTS_CONNECTION_STRING");
         if (string.IsNullOrEmpty(envVar))
         {
-            return Guid.Empty.ToString("D");
+            return "InstrumentationKey=00000000-0000-0000-0000-000000000000";
         }
 
         return envVar;

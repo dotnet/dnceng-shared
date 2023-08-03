@@ -62,7 +62,10 @@ public class InvokeInNewScopeInterceptorTests
     public void InterceptCatchesExceptions()
     {
         var telemetryChannel = new FakeChannel();
-        var config = new TelemetryConfiguration("00000000-0000-0000-0000-000000000001", telemetryChannel);
+        var config = new TelemetryConfiguration()
+        {
+            TelemetryChannel = telemetryChannel
+        };
         var client = new TelemetryClient(config);
 
 
@@ -99,7 +102,10 @@ public class InvokeInNewScopeInterceptorTests
     public void InterceptCreatesScope()
     {
         var telemetryChannel = new FakeChannel();
-        var config = new TelemetryConfiguration("00000000-0000-0000-0000-000000000001", telemetryChannel);
+        var config = new TelemetryConfiguration()
+        {
+            TelemetryChannel = telemetryChannel
+        };
         var client = new TelemetryClient(config);
             
 
