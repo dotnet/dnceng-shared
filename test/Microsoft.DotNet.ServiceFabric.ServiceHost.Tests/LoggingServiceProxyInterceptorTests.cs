@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,10 @@ public class LoggingServiceProxyInterceptorTests
     public void AggregateExceptionIsUnwrapped()
     {
         var telemetryChannel = new FakeChannel();
-        var config = new TelemetryConfiguration("00000000-0000-0000-0000-000000000001", telemetryChannel);
+        var config = new TelemetryConfiguration()
+        {
+            TelemetryChannel = telemetryChannel
+        };
         var client = new TelemetryClient(config);
 
         StatelessServiceContext ctx = MockBuilder.StatelessServiceContext();
@@ -64,7 +66,10 @@ public class LoggingServiceProxyInterceptorTests
     public void ComplexAggregateExceptionIsReported()
     {
         var telemetryChannel = new FakeChannel();
-        var config = new TelemetryConfiguration("00000000-0000-0000-0000-000000000001", telemetryChannel);
+        var config = new TelemetryConfiguration()
+        {
+            TelemetryChannel = telemetryChannel
+        };
         var client = new TelemetryClient(config);
 
         StatelessServiceContext ctx = MockBuilder.StatelessServiceContext();
@@ -105,7 +110,10 @@ public class LoggingServiceProxyInterceptorTests
     public void NormalExceptionIsReported()
     {
         var telemetryChannel = new FakeChannel();
-        var config = new TelemetryConfiguration("00000000-0000-0000-0000-000000000001", telemetryChannel);
+        var config = new TelemetryConfiguration()
+        {
+            TelemetryChannel = telemetryChannel
+        };
         var client = new TelemetryClient(config);
 
         StatelessServiceContext ctx = MockBuilder.StatelessServiceContext();
@@ -144,7 +152,10 @@ public class LoggingServiceProxyInterceptorTests
     public void SetsDependencyData()
     {
         var telemetryChannel = new FakeChannel();
-        var config = new TelemetryConfiguration("00000000-0000-0000-0000-000000000001", telemetryChannel);
+        var config = new TelemetryConfiguration()
+        {
+            TelemetryChannel = telemetryChannel
+        };
         var client = new TelemetryClient(config);
 
         StatelessServiceContext ctx = MockBuilder.StatelessServiceContext();
