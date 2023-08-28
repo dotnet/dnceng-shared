@@ -14,17 +14,17 @@
     <PackageReference Include="Microsoft.ApplicationInsights.DependencyCollector" />
     <PackageReference Include="Microsoft.ApplicationInsights.PerfCounterCollector" />
     <PackageReference Include="Microsoft.ApplicationInsights.ServiceFabric" />
-    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" />
     <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" />
-    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.HttpSys" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="Newtonsoft.Json.Bson" />
-    <PackageReference Include="Microsoft.ServiceFabric" />
+    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.Rest.ClientRuntime" />
     <PackageReference Include="Microsoft.ServiceFabric.Actors" />
+    <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.HttpSys" />
     <PackageReference Include="Microsoft.ServiceFabric.Data" />
     <PackageReference Include="Microsoft.ServiceFabric.Services" />
+    <PackageReference Include="Microsoft.ServiceFabric" />
+    <PackageReference Include="Newtonsoft.Json.Bson" />
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Quartz" />
     <PackageReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
