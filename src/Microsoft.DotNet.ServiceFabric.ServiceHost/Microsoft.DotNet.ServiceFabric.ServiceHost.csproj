@@ -8,6 +8,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
+    <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Castle.Core" />
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
@@ -15,7 +16,6 @@
     <PackageReference Include="Microsoft.ApplicationInsights.PerfCounterCollector" />
     <PackageReference Include="Microsoft.ApplicationInsights.ServiceFabric" />
     <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" />
-    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" />
     <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" />
     <PackageReference Include="Microsoft.ServiceFabric.Actors" />

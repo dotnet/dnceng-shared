@@ -4,14 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+
 using IHostEnvironment = Microsoft.Extensions.Hosting.IHostEnvironment;
 
 namespace Microsoft.DncEng.Configuration.Extensions;
@@ -102,67 +99,23 @@ public static class ServiceConfigurationExtensions
         return builder;
     }
 
-    public static AzureServiceTokenProvider GetAzureServiceTokenProvider(IConfiguration configuration)
-    {
-        string userAssignedIdentityId = configuration[ConfigurationConstants.ManagedIdentityIdConfigurationKey];
-        if (string.IsNullOrEmpty(userAssignedIdentityId))
-        {
-            return new AzureServiceTokenProvider();
-        }
-
-        return new AzureServiceTokenProvider($"RunAs=App;AppId={userAssignedIdentityId}");
-    }
-
     public static TokenCredential GetAzureTokenCredential(IConfiguration configuration)
     {
         string userAssignedIdentityId = configuration[ConfigurationConstants.ManagedIdentityIdConfigurationKey];
         var credentials = new List<TokenCredential>
         {
             new ManagedIdentityCredential(userAssignedIdentityId),
-            new AzureServiceTokenProviderCredential(ConfigurationConstants.MsftAdTenantId),
+            new DefaultAzureCredential(new DefaultAzureCredentialOptions()
+            {
+                TenantId = ConfigurationConstants.MsftAdTenantId,
+            })
         };
+
         if (Debugger.IsAttached)
         {
             credentials.Add(new LocalDevTokenCredential());
         }
 
         return new ChainedTokenCredential(credentials.ToArray());
-    }
-}
-
-public class AzureServiceTokenProviderCredential : TokenCredential
-{
-    private readonly AzureServiceTokenProvider _tokenProvider = new AzureServiceTokenProvider();
-
-    private readonly Func<string[], string> _scopesToResource = (Func<string[], string>)
-        typeof(DeviceCodeCredential).Assembly
-            .GetType("Azure.Identity.ScopeUtilities")!
-            .GetMethod("ScopesToResource")!
-            .CreateDelegate(typeof(Func<string[], string>));
-
-    private readonly string _tenantId;
-
-    public AzureServiceTokenProviderCredential(string tenantId)
-    {
-        _tenantId = tenantId;
-    }
-
-    public override async ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var resource = _scopesToResource(requestContext.Scopes);
-            var result = await _tokenProvider.GetAuthenticationResultAsync(resource, _tenantId, cancellationToken);
-            return new AccessToken(result.AccessToken, result.ExpiresOn);
-        }
-        catch (AzureServiceTokenProviderException ex)
-        {
-            throw new CredentialUnavailableException("AzureServiceTokenProviderCredential unable to authenticate", ex);
-        }
-    }
-
-    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
-    {
-        return Task.Run(async () => await GetTokenAsync(requestContext, cancellationToken), cancellationToken).GetAwaiter().GetResult();
     }
 }
