@@ -73,5 +73,8 @@
     <PackageVersion Include="System.Text.Encodings.Web" Version="7.0.0" />
     <PackageVersion Include="WindowsAzure.Storage" Version="9.3.3" />
     <PackageVersion Include="JetBrains.Annotations" Version="11.1.0" PrivateAssets="All" />
+
+    <!-- Pinning versions because of CG -->
+    <PackageVersion Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 </Project>
