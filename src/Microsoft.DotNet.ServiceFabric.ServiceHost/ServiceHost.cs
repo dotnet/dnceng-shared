@@ -64,7 +64,7 @@ public partial class ServiceHost
 
     private readonly List<Func<Task>> _serviceCallbacks = new List<Func<Task>>();
 
-    private ServiceHost()
+    protected ServiceHost()
     {
     }
 
