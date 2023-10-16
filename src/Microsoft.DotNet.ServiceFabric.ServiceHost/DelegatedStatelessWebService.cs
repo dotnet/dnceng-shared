@@ -71,7 +71,7 @@ public class DelegatedStatelessWebService<TStartup> : StatelessService where TSt
     {
         return new[]
         {
-            CreateServiceInstanceListener("ServiceEndpoint");
+            CreateServiceInstanceListener("ServiceEndpoint")
         };
     }
 }

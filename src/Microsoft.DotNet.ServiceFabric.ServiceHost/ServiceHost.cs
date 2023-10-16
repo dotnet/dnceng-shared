@@ -64,7 +64,7 @@ public partial class ServiceHost
 
     private readonly List<Func<Task>> _serviceCallbacks = new List<Func<Task>>();
 
-    private ServiceHost()
+    protected ServiceHost()
     {
     }
 
@@ -145,7 +145,7 @@ public partial class ServiceHost
         return this;
     }
 
-    private void ApplyConfigurationToServices(IServiceCollection services)
+    protected void ApplyConfigurationToServices(IServiceCollection services)
     {
         foreach (Action<IServiceCollection> act in _configureServicesActions)
         {
@@ -153,7 +153,7 @@ public partial class ServiceHost
         }
     }
 
-    private void RegisterStatelessService<TService>(
+    protected void RegisterStatelessService<TService>(
         string serviceTypeName,
         Func<StatelessServiceContext, TService> ctor) where TService : StatelessService
     {
@@ -244,7 +244,7 @@ public partial class ServiceHost
         return ConfigureServices(builder => builder.AddScoped<TActor>());
     }
 
-    public ServiceHost RegisterStatelessWebService<TStartup>(string serviceTypeName, Action<IWebHostBuilder> configureWebHost = null) where TStartup : class
+    public virtual ServiceHost RegisterStatelessWebService<TStartup>(string serviceTypeName, Action<IWebHostBuilder> configureWebHost = null) where TStartup : class
     {
         RegisterStatelessService(
             serviceTypeName,
