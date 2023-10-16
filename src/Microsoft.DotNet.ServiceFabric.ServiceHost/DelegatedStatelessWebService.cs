@@ -29,16 +29,13 @@ public class DelegatedStatelessWebService<TStartup> : StatelessService where TSt
         _configureServices = configureServices;
     }
 
-    protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
-    {
-        return new[]
-        {
-            new ServiceInstanceListener(
+    protected ServiceInstanceListener CreateServiceInstanceListener(string endpointName) =>
+        new ServiceInstanceListener(
                 context =>
                 {
                     return new HttpSysCommunicationListener(
                         context,
-                        "ServiceEndpoint",
+                        endpointName,
                         (url, listener) =>
                         {
                             var builder = new WebHostBuilder()
@@ -68,9 +65,12 @@ public class DelegatedStatelessWebService<TStartup> : StatelessService where TSt
                                 .UseUrls(url)
                                 .Build();
                         });
-                })
-        };
-    }
+                });
+
+    protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners() => new[]
+    {
+        CreateServiceInstanceListener("ServiceEndpoint")
+    };
 }
 
 public class DelegatedStatelessWebServiceStartup<TStartup> : IStartup
