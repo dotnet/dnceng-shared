@@ -67,13 +67,10 @@ public class DelegatedStatelessWebService<TStartup> : StatelessService where TSt
                         });
                 });
 
-    protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+    protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners() => new[]
     {
-        return new[]
-        {
-            CreateServiceInstanceListener("ServiceEndpoint")
-        };
-    }
+        CreateServiceInstanceListener("ServiceEndpoint")
+    };
 }
 
 public class DelegatedStatelessWebServiceStartup<TStartup> : IStartup
