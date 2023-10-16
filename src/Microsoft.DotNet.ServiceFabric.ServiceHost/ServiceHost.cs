@@ -74,10 +74,10 @@ public partial class ServiceHost
     public static void Run(Action<ServiceHost> configure)
     {
         var host = new ServiceHost();
-        host.Start(configure);
+        host.InternalRun(configure);
     }
 
-    protected void Start(Action<ServiceHost> configure)
+    protected void InternalRun(Action<ServiceHost> configure)
     {
         // Because of this issue, the activity tracking causes
         // arbitrarily HttpClient calls to crash, so disable it until
