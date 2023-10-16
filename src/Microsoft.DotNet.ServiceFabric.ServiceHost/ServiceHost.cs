@@ -73,6 +73,12 @@ public partial class ServiceHost
     /// </summary>
     public static void Run(Action<ServiceHost> configure)
     {
+        var host = new ServiceHost();
+        host.Start(configure);
+    }
+
+    protected void Start(Action<ServiceHost> configure)
+    {
         // Because of this issue, the activity tracking causes
         // arbitrarily HttpClient calls to crash, so disable it until
         // it is fixed
@@ -84,7 +90,7 @@ public partial class ServiceHost
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             ServicePointManager.CheckCertificateRevocationList = true;
             JsonConvert.DefaultSettings =
-                () => new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.None};
+                () => new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None };
             var loggingServices = new ServiceCollection();
             ConfigureLoggingServices(loggingServices);
             using var loggingServiceProvider = loggingServices.BuildServiceProvider();
@@ -102,9 +108,8 @@ public partial class ServiceHost
                     "Microsoft-AspNetCore-Server-Kestrel",
                     // dotnet sources
                     "System.Data.DataCommonEventSource");
-                var host = new ServiceHost();
-                configure(host);
-                host.Start();
+                configure(this);
+                Start();
                 packageActivationContext.ReportDeployedServicePackageHealth(
                     new HealthInformation("ServiceHost", "ServiceHost.Run", HealthState.Ok));
                 Thread.Sleep(Timeout.Infinite);
@@ -128,7 +133,7 @@ public partial class ServiceHost
                 {
                     Description = $"Unhandled Exception: {ex}"
                 },
-                new HealthReportSendOptions {Immediate = true});
+                new HealthReportSendOptions { Immediate = true });
             Thread.Sleep(5000);
             Environment.Exit(-1);
         }
