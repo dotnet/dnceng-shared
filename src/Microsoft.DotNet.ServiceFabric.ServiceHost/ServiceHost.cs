@@ -59,12 +59,12 @@ public class HostEnvironment : IWebHostEnvironment,
 /// </summary>
 public partial class ServiceHost
 {
-    protected readonly List<Action<IServiceCollection>> _configureServicesActions =
+    private readonly List<Action<IServiceCollection>> _configureServicesActions =
         new List<Action<IServiceCollection>> {ConfigureDefaultServices};
 
-    protected readonly List<Func<Task>> _serviceCallbacks = new List<Func<Task>>();
+    private readonly List<Func<Task>> _serviceCallbacks = new List<Func<Task>>();
 
-    protected ServiceHost()
+    private ServiceHost()
     {
     }
 
@@ -140,7 +140,7 @@ public partial class ServiceHost
         return this;
     }
 
-    protected void ApplyConfigurationToServices(IServiceCollection services)
+    private void ApplyConfigurationToServices(IServiceCollection services)
     {
         foreach (Action<IServiceCollection> act in _configureServicesActions)
         {
@@ -148,7 +148,7 @@ public partial class ServiceHost
         }
     }
 
-    protected void RegisterStatelessService<TService>(
+    private void RegisterStatelessService<TService>(
         string serviceTypeName,
         Func<StatelessServiceContext, TService> ctor) where TService : StatelessService
     {
@@ -250,7 +250,7 @@ public partial class ServiceHost
         return ConfigureServices(builder => builder.AddScoped<TStartup>());
     }
 
-    protected void Start()
+    private void Start()
     {
         foreach (Func<Task> svc in _serviceCallbacks)
         {
