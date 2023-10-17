@@ -65,7 +65,7 @@ public class DelegatedStatelessWebService<TStartup> : StatelessService where TSt
                                 .UseUrls(url)
                                 .Build();
                         });
-                });
+                }, name: endpointName);
 
     protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners() => new[]
     {
