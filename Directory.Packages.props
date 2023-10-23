@@ -49,7 +49,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.55.0" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.56.0" />
     <PackageVersion Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
     <PackageVersion Include="Microsoft.ServiceFabric" Version="8.2.1571" />
     <PackageVersion Include="Microsoft.ServiceFabric.Actors" Version="5.2.1571" />
