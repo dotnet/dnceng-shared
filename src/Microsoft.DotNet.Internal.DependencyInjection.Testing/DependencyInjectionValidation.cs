@@ -18,6 +18,7 @@ public static class DependencyInjectionValidation
         "System.Fabric.StatelessServiceContext",
         "System.Fabric.StatefulServiceContext",
         "Microsoft.DotNet.ServiceFabric.ServiceHost.IServiceLoadReporter",
+        "Microsoft.Extensions.Diagnostics.Metrics.MetricsSubscriptionManager",
         "Microsoft.Extensions.Options.IConfigureOptions`1",
         "Microsoft.Extensions.Caching.Memory.MemoryCacheOptions",
         "Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions",
@@ -27,7 +28,9 @@ public static class DependencyInjectionValidation
 
     private static readonly ImmutableList<string> s_exemptNamespaces = ImmutableList.Create(
         "Microsoft.ApplicationInsights.AspNetCore",
-        "Microsoft.AspNetCore"
+        "Microsoft.AspNetCore",
+        "Microsoft.Extensions.Options",
+        "Microsoft.Extensions.Diagnostics"
     );
 
     public static bool IsDependencyResolutionCoherent(
