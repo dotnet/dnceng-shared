@@ -125,6 +125,7 @@ public class GitHubClaimsResolverTests
             default,
             default,
             default,
+            default,
             org,
             default,
             default);
