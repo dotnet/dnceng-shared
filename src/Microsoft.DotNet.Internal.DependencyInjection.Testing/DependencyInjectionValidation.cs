@@ -52,17 +52,17 @@ public static class DependencyInjectionValidation
 
         foreach (ServiceDescriptor service in services)
         {
-            if (service.ImplementationType == null)
+            if (service.GetImplementationType() == null)
             {
                 continue;
             }
 
-            if (IsExemptType(service.ImplementationType) || IsExemptType(service.ServiceType))
+            if (IsExemptType(service.GetImplementationType()) || IsExemptType(service.ServiceType))
             {
                 continue;
             }
 
-            if (!IsTypeResolvable(service.ImplementationType, services, allErrors, service.Lifetime))
+            if (!IsTypeResolvable(service.GetImplementationType(), services, allErrors, service.Lifetime))
             {
                 allResolved = false;
             }
