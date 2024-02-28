@@ -52,17 +52,19 @@ public static class DependencyInjectionValidation
 
         foreach (ServiceDescriptor service in services)
         {
-            if (service.ImplementationType == null)
+            Type serviceImplementationType = GetServiceDescriptorImplementationType(service);
+
+            if (serviceImplementationType == null)
             {
                 continue;
             }
 
-            if (IsExemptType(service.ImplementationType) || IsExemptType(service.ServiceType))
+            if (IsExemptType(serviceImplementationType) || IsExemptType(service.ServiceType))
             {
                 continue;
             }
 
-            if (!IsTypeResolvable(service.ImplementationType, services, allErrors, service.Lifetime))
+            if (!IsTypeResolvable(serviceImplementationType, services, allErrors, service.Lifetime))
             {
                 allResolved = false;
             }
@@ -262,4 +264,9 @@ public static class DependencyInjectionValidation
 
         return s_exemptTypes.Contains(type.FullName) || s_exemptNamespaces.Any(n => type.FullName.StartsWith(n));
     }
+
+    private static Type GetServiceDescriptorImplementationType(ServiceDescriptor descriptor) =>
+        descriptor.IsKeyedService
+            ? descriptor.KeyedImplementationType
+            : descriptor.ImplementationType;
 }
