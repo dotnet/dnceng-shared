@@ -70,7 +70,7 @@ public static class DependencyInjectionValidation
             }
         }
 
-        foreach (Type scopedType in additionalScopedTypes ?? [])
+        foreach (Type scopedType in additionalScopedTypes ?? Enumerable.Empty<Type>())
         {
             if (!IsTypeResolvable(scopedType, services, allErrors, ServiceLifetime.Scoped))
             {
@@ -78,7 +78,7 @@ public static class DependencyInjectionValidation
             }
         }
 
-        foreach (Type scopedType in additionalSingletonTypes ?? [])
+        foreach (Type scopedType in additionalSingletonTypes ?? Enumerable.Empty<Type>())
         {
             if (!IsTypeResolvable(scopedType, services, allErrors, ServiceLifetime.Singleton))
             {
