@@ -158,7 +158,8 @@ public static class DependencyInjectionValidation
 
         foreach (ParameterInfo p in ctor.GetParameters())
         {
-            ServiceDescriptor parameterService = services.FirstOrDefault(s => IsMatchingServiceRegistration(s.ServiceType, p.ParameterType, exemptTypes));
+            ServiceDescriptor parameterService =
+                services.FirstOrDefault(s => IsMatchingServiceRegistration(s.ServiceType, p.ParameterType, exemptTypes));
             if (parameterService != null)
             {
                 if (serviceLifetime == ServiceLifetime.Singleton &&
