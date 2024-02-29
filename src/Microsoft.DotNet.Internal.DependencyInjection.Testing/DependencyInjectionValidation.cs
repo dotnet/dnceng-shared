@@ -42,7 +42,9 @@ public static class DependencyInjectionValidation
     {
         errorMessage = null;
 
-        var exemptTypes = s_exemptTypes.AddRange(additionalExemptTypes ?? Enumerable.Empty<string>());
+        var exemptTypes = additionalExemptTypes != null
+            ? s_exemptTypes.AddRange(additionalExemptTypes)
+            : s_exemptTypes;
 
         StringBuilder allErrors = new StringBuilder();
         allErrors.Append("The following types are not resolvable:");
@@ -100,7 +102,7 @@ public static class DependencyInjectionValidation
         ServiceCollection services,
         StringBuilder msgBuilder,
         ServiceLifetime serviceLifetime,
-        IEnumerable<string> exemptTypes)
+        ImmutableList<string> exemptTypes)
     {
         ConstructorInfo[] constructors = type
             .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
@@ -143,7 +145,7 @@ public static class DependencyInjectionValidation
         bool recordErrors,
         ServiceLifetime serviceLifetime,
         out string errorMessage,
-        IEnumerable<string> exemptTypes)
+        ImmutableList<string> exemptTypes)
     {
         errorMessage = null;
         bool resolvedAllParameters = true;
@@ -218,7 +220,7 @@ public static class DependencyInjectionValidation
         return type.Name;
     }
 
-    private static bool IsMatchingServiceRegistration(Type serviceType, Type parameterType, IEnumerable<string> exemptTypes)
+    private static bool IsMatchingServiceRegistration(Type serviceType, Type parameterType, ImmutableList<string> exemptTypes)
     {
         // If it's options, lets make sure they are configured
         if (parameterType.IsConstructedGenericType)
@@ -269,7 +271,7 @@ public static class DependencyInjectionValidation
         }
     }
 
-    private static bool IsExemptType(Type type, IEnumerable<string> exemptTypes)
+    private static bool IsExemptType(Type type, ImmutableList<string> exemptTypes)
     {
         if (type.IsConstructedGenericType)
             return IsExemptType(type.GetGenericTypeDefinition(), exemptTypes);
