@@ -37,9 +37,12 @@ public static class DependencyInjectionValidation
         Action<ServiceCollection> register,
         out string errorMessage,
         IEnumerable<Type> additionalScopedTypes = null,
-        IEnumerable<Type> additionalSingletonTypes = null)
+        IEnumerable<Type> additionalSingletonTypes = null,
+        IEnumerable<string> additionalExemptTypes = null)
     {
         errorMessage = null;
+
+        var exemptTypes = s_exemptTypes.AddRange(additionalExemptTypes ?? Enumerable.Empty<string>());
 
         StringBuilder allErrors = new StringBuilder();
         allErrors.Append("The following types are not resolvable:");
@@ -59,12 +62,12 @@ public static class DependencyInjectionValidation
                 continue;
             }
 
-            if (IsExemptType(serviceImplementationType) || IsExemptType(service.ServiceType))
+            if (IsExemptType(serviceImplementationType, exemptTypes) || IsExemptType(service.ServiceType, exemptTypes))
             {
                 continue;
             }
 
-            if (!IsTypeResolvable(serviceImplementationType, services, allErrors, service.Lifetime))
+            if (!IsTypeResolvable(serviceImplementationType, services, allErrors, service.Lifetime, exemptTypes))
             {
                 allResolved = false;
             }
@@ -72,7 +75,7 @@ public static class DependencyInjectionValidation
 
         foreach (Type scopedType in additionalScopedTypes ?? Enumerable.Empty<Type>())
         {
-            if (!IsTypeResolvable(scopedType, services, allErrors, ServiceLifetime.Scoped))
+            if (!IsTypeResolvable(scopedType, services, allErrors, ServiceLifetime.Scoped, exemptTypes))
             {
                 allResolved = false;
             }
@@ -80,7 +83,7 @@ public static class DependencyInjectionValidation
 
         foreach (Type scopedType in additionalSingletonTypes ?? Enumerable.Empty<Type>())
         {
-            if (!IsTypeResolvable(scopedType, services, allErrors, ServiceLifetime.Singleton))
+            if (!IsTypeResolvable(scopedType, services, allErrors, ServiceLifetime.Singleton, exemptTypes))
             {
                 allResolved = false;
             }
@@ -96,7 +99,8 @@ public static class DependencyInjectionValidation
         Type type,
         ServiceCollection services,
         StringBuilder msgBuilder,
-        ServiceLifetime serviceLifetime)
+        ServiceLifetime serviceLifetime,
+        IEnumerable<string> exemptTypes)
     {
         ConstructorInfo[] constructors = type
             .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
@@ -112,7 +116,13 @@ public static class DependencyInjectionValidation
         string errorMessage = null;
         foreach (ConstructorInfo ctor in constructors)
         {
-            if (IsConstructorResolvable(ctor, services, errorMessage == null, serviceLifetime, out string ctorMsg))
+            if (IsConstructorResolvable(
+                    ctor,
+                    services,
+                    errorMessage == null,
+                    serviceLifetime,
+                    out string ctorMsg,
+                    exemptTypes))
             {
                 return true;
             }
@@ -132,7 +142,8 @@ public static class DependencyInjectionValidation
         ServiceCollection services,
         bool recordErrors,
         ServiceLifetime serviceLifetime,
-        out string errorMessage)
+        out string errorMessage,
+        IEnumerable<string> exemptTypes)
     {
         errorMessage = null;
         bool resolvedAllParameters = true;
@@ -147,7 +158,7 @@ public static class DependencyInjectionValidation
 
         foreach (ParameterInfo p in ctor.GetParameters())
         {
-            ServiceDescriptor parameterService = services.FirstOrDefault(s => IsMatchingServiceRegistration(s.ServiceType, p.ParameterType));
+            ServiceDescriptor parameterService = services.FirstOrDefault(s => IsMatchingServiceRegistration(s.ServiceType, p.ParameterType, exemptTypes));
             if (parameterService != null)
             {
                 if (serviceLifetime == ServiceLifetime.Singleton &&
@@ -206,7 +217,7 @@ public static class DependencyInjectionValidation
         return type.Name;
     }
 
-    private static bool IsMatchingServiceRegistration(Type serviceType, Type parameterType)
+    private static bool IsMatchingServiceRegistration(Type serviceType, Type parameterType, IEnumerable<string> exemptTypes)
     {
         // If it's options, lets make sure they are configured
         if (parameterType.IsConstructedGenericType)
@@ -218,7 +229,7 @@ public static class DependencyInjectionValidation
 
                 Type optionType = parameterType.GenericTypeArguments[0];
 
-                if (IsExemptType(optionType))
+                if (IsExemptType(optionType, exemptTypes))
                     return true;
 
                 Type serviceRoot = serviceType.GetGenericTypeDefinition();
@@ -227,7 +238,7 @@ public static class DependencyInjectionValidation
             }
         }
 
-        if (IsExemptType(parameterType))
+        if (IsExemptType(parameterType, exemptTypes))
         {
             return true;
         }
@@ -257,12 +268,12 @@ public static class DependencyInjectionValidation
         }
     }
 
-    private static bool IsExemptType(Type type)
+    private static bool IsExemptType(Type type, IEnumerable<string> exemptTypes)
     {
         if (type.IsConstructedGenericType)
-            return IsExemptType(type.GetGenericTypeDefinition());
+            return IsExemptType(type.GetGenericTypeDefinition(), exemptTypes);
 
-        return s_exemptTypes.Contains(type.FullName) || s_exemptNamespaces.Any(n => type.FullName.StartsWith(n));
+        return exemptTypes.Contains(type.FullName) || s_exemptNamespaces.Any(n => type.FullName.StartsWith(n));
     }
 
     private static Type GetServiceDescriptorImplementationType(ServiceDescriptor descriptor) =>
