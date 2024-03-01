@@ -36,9 +36,9 @@ public static class DependencyInjectionValidation
     public static bool IsDependencyResolutionCoherent(
         Action<ServiceCollection> register,
         out string errorMessage,
-        IEnumerable<Type> additionalScopedTypes = null,
-        IEnumerable<Type> additionalSingletonTypes = null,
-        IEnumerable<string> additionalExemptTypes = null)
+        IReadOnlyCollection<Type> additionalScopedTypes = null,
+        IReadOnlyCollection<Type> additionalSingletonTypes = null,
+        IReadOnlyCollection<string> additionalExemptTypes = null)
     {
         errorMessage = null;
 
