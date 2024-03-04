@@ -15,9 +15,7 @@ trigger:
   branches:
     include:
     - main
-pr:
-- main
-
+    
 stages:
 - stage: build
   dependsOn: []
