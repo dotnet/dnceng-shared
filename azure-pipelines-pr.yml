@@ -6,13 +6,7 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: .NETCore
-    
-# CI and PR triggers
-trigger:
-  batch: true
-  branches:
-    include:
-    - main
+
 pr:
 - main
 
