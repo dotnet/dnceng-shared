@@ -6,9 +6,7 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: .NETCore
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: SDL_Settings
-
+    
 # CI and PR triggers
 trigger:
   batch: true
@@ -46,25 +44,6 @@ stages:
         variables:
         - _InternalBuildArgs: ''
 
-        # Only enable publishing in non-public, non PR scenarios.
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
-          # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
-          # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
-          - group: DotNet-Blob-Feed
-          - group: DotNet-Symbol-Server-Pats
-          - group: Publish-Build-Assets
-          - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
-          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-              /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-              /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-              /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-              /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-
         strategy:
           matrix:
             # Only build debug in non-official builds
@@ -81,10 +60,7 @@ stages:
                 _PublishType: none
                 _SignType: test
                 _DotNetPublishToBlobFeed : false
-              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-                _PublishType: blob
-                _SignType: test
-                _DotNetPublishToBlobFeed : true
+
         steps:
         - checkout: self
           clean: true
@@ -116,39 +92,5 @@ stages:
           displayName: Build / Publish
           condition: succeeded()
 
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-
-          - task: ComponentGovernanceComponentDetection@0
-            inputs:
-              # `.packages` directory is used by some tools running during build.
-              # By default ComponentDetection scans this directory and sometimes reports
-              # vulnerabilities for packages that are not part of the published product.
-              # We can ignore this directory because actual vulnerabilities
-              # that we are interested in will be found by the tool
-              # when scanning .csproj and package.json files.
-              ignoreDirectories: '.packages'
-
         - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
           - template: /eng/test.yaml
-
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: eng/common/templates/post-build/post-build.yml
-    parameters:
-      enableSymbolValidation: true
-      enableSigningValidation: false
-      artifactsPublishingAdditionalParameters: '/p:CheckEolTargetFramework=false'
-      symbolPublishingAdditionalParameters: '/p:CheckEolTargetFramework=false'
-      # This is to enable SDL runs part of Post-Build Validation Stage
-      SDLValidationParameters:
-        enable: true
-        params: '-SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL $(_TsaInstanceURL)
-        -TsaProjectName $(_TsaProjectName)
-        -TsaNotificationEmail $(_TsaNotificationEmail)
-        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
-        -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "Dnceng-Shared"
-        -TsaCodebaseName "Dnceng-Shared"
-        -TsaPublish $True
-        -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
