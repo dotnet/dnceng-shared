@@ -4,9 +4,6 @@ pr:
   branches:
     include:
     - main
-  paths:
-    include:
-    - azure-pipelines.yml
 
 stages:
 - stage: build
