@@ -16,7 +16,7 @@ stages:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
       enablePublishBuildAssets: false
-      enablePublishUsingPipelines: true
+      enablePublishUsingPipelines: false
       enableTelemetry: true
       helixRepo: dotnet/arcade-services
       jobs:
