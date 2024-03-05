@@ -1,7 +1,13 @@
 trigger: none
 
 pr:
-- main
+  autoCancel: true
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - azure-pipelines.yml
 
 stages:
 - stage: build
@@ -74,5 +80,5 @@ stages:
           name: Build
           displayName: Build / Publish
           condition: succeeded()
-          
+
         - template: /eng/test.yaml
