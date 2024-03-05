@@ -1,11 +1,4 @@
-variables:
-  # Cannot use key:value syntax in root defined variables
-  - name: _TeamName
-    value: DotNetCore
-  - name: _PublishUsingPipelines
-    value: true
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
+trigger: none
 
 pr:
 - main
@@ -20,8 +13,8 @@ stages:
       enableMicrobuild: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      enablePublishBuildAssets: true
-      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
+      enablePublishBuildAssets: false
+      enablePublishUsingPipelines: true
       enableTelemetry: true
       helixRepo: dotnet/arcade-services
       jobs:
@@ -34,9 +27,6 @@ stages:
           ${{ if eq(variables['System.TeamProject'], 'public')}}:
             name: NetCore-Public          
             demands: ImageOverride -equals 1es-windows-2019-open
-
-        variables:
-        - _InternalBuildArgs: ''
 
         strategy:
           matrix:
@@ -79,12 +69,10 @@ stages:
         - script: eng/common/cibuild.cmd
             -configuration $(_BuildConfig)
             -prepareMachine
-            $(_InternalBuildArgs)
             /p:Test=false
             /P:Sign=false
           name: Build
           displayName: Build / Publish
           condition: succeeded()
-
-        - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
-          - template: /eng/test.yaml
+          
+        - template: /eng/test.yaml
