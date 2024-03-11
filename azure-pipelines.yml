@@ -15,9 +15,15 @@ trigger:
   branches:
     include:
     - main
-pr:
-- main
 
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - azure-pipelines.yml
+    
 stages:
 - stage: build
   dependsOn: []
