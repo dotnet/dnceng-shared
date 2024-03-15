@@ -6,155 +6,127 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: .NETCore
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: SDL_Settings
+  - group: SDL_Settings
 
-# CI and PR triggers
 trigger:
   batch: true
   branches:
     include:
     - main
 
-pr:
-  branches:
-    include:
-    - main
-  paths:
-    include:
-    - azure-pipelines.yml
-    
-stages:
-- stage: build
-  dependsOn: []
-  displayName: Build
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: false
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: false
-      enablePublishBuildAssets: true
-      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
-      enableTelemetry: true
-      helixRepo: dotnet/arcade-services
+pr: none
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2019
+      os: windows
+    stages:
+    - stage: build
+      dependsOn: []
+      displayName: Build
       jobs:
-      - job: Windows_NT
-        timeoutInMinutes: 90
-        pool:
-          ${{ if eq(variables['System.TeamProject'], 'internal')}}:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals 1es-windows-2019
-          ${{ if eq(variables['System.TeamProject'], 'public')}}:
-            name: NetCore-Public          
-            demands: ImageOverride -equals 1es-windows-2019-open
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          enableMicrobuild: false
+          enablePublishBuildArtifacts: true
+          enablePublishTestResults: false
+          enablePublishBuildAssets: true
+          enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
+          enableTelemetry: true
+          helixRepo: dotnet/arcade-services
+          jobs:
+          - job: Windows_NT
+            timeoutInMinutes: 90
+            variables:
+            # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+            # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
+            # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+            - group: DotNet-Blob-Feed
+            - group: DotNet-Symbol-Server-Pats
+            - group: Publish-Build-Assets
+            - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+            - _BuildConfig: Release
+            - _PublishType: blob
+            - _SignType: test
+            - _DotNetPublishToBlobFeed: true
+            - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)
+                /p:TeamName=$(_TeamName)
+                /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+                /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+                /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
-        variables:
-        - _InternalBuildArgs: ''
+            steps:
+            - checkout: self
+              clean: true
 
-        # Only enable publishing in non-public, non PR scenarios.
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
-          # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
-          # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
-          - group: DotNet-Blob-Feed
-          - group: DotNet-Symbol-Server-Pats
-          - group: Publish-Build-Assets
-          - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
-          - _InternalBuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-              /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-              /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-              /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-              /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            - task: UseDotNet@2
+              displayName: Install Correct .NET Version
+              inputs:
+                useGlobalJson: true
 
-        strategy:
-          matrix:
-            # Only build debug in non-official builds
-            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-                debug_configuration:
-                  _BuildConfig: Debug
-                  _PublishType: none
-                  _SignType: test
-                  _DotNetPublishToBlobFeed : false
-            release_configuration:
-              _BuildConfig: Release
-              # PRs or external builds are not signed.
-              ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-                _PublishType: none
-                _SignType: test
-                _DotNetPublishToBlobFeed : false
-              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-                _PublishType: blob
-                _SignType: test
-                _DotNetPublishToBlobFeed : true
-        steps:
-        - checkout: self
-          clean: true
+            - task: UseDotNet@2
+              displayName: Install .NET Version 3.1
+              inputs:
+                version: 3.1.x
 
-        - task: UseDotNet@2
-          displayName: Install Correct .NET Version
-          inputs:
-            useGlobalJson: true
+            - task: NuGetToolInstaller@0
+              inputs:
+                versionSpec: 6.1.x
 
-        - task: UseDotNet@2
-          displayName: Install .NET Version 3.1
-          inputs:
-            version: 3.1.x
+            - powershell: eng/set-version-parameters.ps1
+              displayName: Calculate release version variables
 
-        - task: NuGetToolInstaller@0
-          inputs:
-            versionSpec: 6.1.x
+            - script: eng/common/cibuild.cmd
+                -configuration $(_BuildConfig)
+                -prepareMachine
+                $(_InternalBuildArgs)
+                /p:Test=false
+                /P:Sign=false
+              name: Build
+              displayName: Build / Publish
+              condition: succeeded()
 
-        - powershell: eng/set-version-parameters.ps1
-          displayName: Calculate release version variables
+            - task: ComponentGovernanceComponentDetection@0
+              inputs:
+                # `.packages` directory is used by some tools running during build.
+                # By default ComponentDetection scans this directory and sometimes reports
+                # vulnerabilities for packages that are not part of the published product.
+                # We can ignore this directory because actual vulnerabilities
+                # that we are interested in will be found by the tool
+                # when scanning .csproj and package.json files.
+                ignoreDirectories: '.packages'
 
-        - script: eng/common/cibuild.cmd
-            -configuration $(_BuildConfig)
-            -prepareMachine
-            $(_InternalBuildArgs)
-            /p:Test=false
-            /P:Sign=false
-          name: Build
-          displayName: Build / Publish
-          condition: succeeded()
-
-        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-
-          - task: ComponentGovernanceComponentDetection@0
-            inputs:
-              # `.packages` directory is used by some tools running during build.
-              # By default ComponentDetection scans this directory and sometimes reports
-              # vulnerabilities for packages that are not part of the published product.
-              # We can ignore this directory because actual vulnerabilities
-              # that we are interested in will be found by the tool
-              # when scanning .csproj and package.json files.
-              ignoreDirectories: '.packages'
-
-        - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
-          - template: /eng/test.yaml
-
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: eng/common/templates/post-build/post-build.yml
-    parameters:
-      enableSymbolValidation: true
-      enableSigningValidation: false
-      artifactsPublishingAdditionalParameters: '/p:CheckEolTargetFramework=false'
-      symbolPublishingAdditionalParameters: '/p:CheckEolTargetFramework=false'
-      # This is to enable SDL runs part of Post-Build Validation Stage
-      SDLValidationParameters:
-        enable: true
-        params: '-SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL $(_TsaInstanceURL)
-        -TsaProjectName $(_TsaProjectName)
-        -TsaNotificationEmail $(_TsaNotificationEmail)
-        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
-        -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "Dnceng-Shared"
-        -TsaCodebaseName "Dnceng-Shared"
-        -TsaPublish $True
-        -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
+    - template: /eng/common/templates-official/post-build/post-build.yml@self
+      parameters:
+        enableSymbolValidation: true
+        enableSigningValidation: false
+        artifactsPublishingAdditionalParameters: '/p:CheckEolTargetFramework=false'
+        symbolPublishingAdditionalParameters: '/p:CheckEolTargetFramework=false'
+        # This is to enable SDL runs part of Post-Build Validation Stage
+        SDLValidationParameters:
+          enable: true
+          params: '-SourceToolsList @("policheck","credscan")
+          -TsaInstanceURL $(_TsaInstanceURL)
+          -TsaProjectName $(_TsaProjectName)
+          -TsaNotificationEmail $(_TsaNotificationEmail)
+          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+          -TsaBugAreaPath $(_TsaBugAreaPath)
+          -TsaIterationPath $(_TsaIterationPath)
+          -TsaRepositoryName "Dnceng-Shared"
+          -TsaCodebaseName "Dnceng-Shared"
+          -TsaPublish $True
+          -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
