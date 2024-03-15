@@ -1,4 +1,5 @@
 variables:
+  # Cannot use key:value syntax in root defined variables
   - name: _TeamName
     value: DotNetCore
   - name: _PublishUsingPipelines
@@ -13,13 +14,7 @@ trigger:
     include:
     - main
 
-pr:
-  branches:
-    include:
-    - main
-  paths:
-    include:
-    - azure-pipelines.yml
+pr: none
 
 resources:
   repositories:
@@ -73,7 +68,7 @@ extends:
                 /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-                  
+
             steps:
             - checkout: self
               clean: true
