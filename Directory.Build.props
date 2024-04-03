@@ -15,7 +15,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <NoWarn>$(NoWarn);NU5125;CA1416;NU1507</NoWarn>
     <!--
-      We have some level of support for macOS in this repo, this warning is telling us that we are on the precipice of
+      We have some level of support for macOS in this repo. This warning is telling us that we are on the precipice of
       failure (because we are depending on win-x64 only assemblies). But darc is basically standing in the middle
       of a thunderstorm and just hasn't been struck by lightning.
       We don't have any validation around this scenario, and we don't have time to separate out all our dependencies
