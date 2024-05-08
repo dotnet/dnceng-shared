@@ -298,7 +298,12 @@ public partial class ServiceHost
             {
                 b.AddServiceFabric((o, p) => { });
                 b.AddLogging();
-                b.AddAzureTable((o, p) => o.WriteSasUri = p.GetRequiredService<IConfiguration>()["HealthTableUri"]);
+                b.AddAzureTable((o, p) => {
+                    var configuration = p.GetRequiredService<IConfiguration>();
+                    o.ConnectionString = configuration["ConnectionString"];
+                    o.TableName = configuration["TableName"];
+                    o.ManagedIdentityClientId = configuration["ManagedIdentityClientId"];
+                });
             });
         services.AddSingleton<ISystemClock, SystemClock>();
         services.AddSingleton<Lifecycle, AppInsightsFlushLifecycle>();

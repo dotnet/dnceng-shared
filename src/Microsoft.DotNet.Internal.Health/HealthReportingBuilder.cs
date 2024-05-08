@@ -17,9 +17,13 @@ public class HealthReportingBuilder
         _services = services;
     }
         
-    public HealthReportingBuilder AddAzureTable(string statusTableUrl)
+    public HealthReportingBuilder AddAzureTable(string connectionString, string tableName, string managedIdentityClientId)
     {
-        return AddAzureTable((o, _) => o.WriteSasUri = statusTableUrl);
+        return AddAzureTable((o, _) => {
+            o.ConnectionString = connectionString;
+            o.TableName = tableName;
+            o.ManagedIdentityClientId = managedIdentityClientId;
+        });
     }
 
     public HealthReportingBuilder AddAzureTable(Action<AzureTableHealthReportingOptions, IServiceProvider> configure)

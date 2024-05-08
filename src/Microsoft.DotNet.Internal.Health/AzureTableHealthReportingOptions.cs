@@ -5,5 +5,7 @@ namespace Microsoft.DotNet.Internal.Health;
 
 public class AzureTableHealthReportingOptions
 {
-    public string WriteSasUri { get; set; }
+    public string ConnectionString { get; set; }
+    public string TableName { get; set; }
+    public string ManagedIdentityClientId { get; set; }
 }
