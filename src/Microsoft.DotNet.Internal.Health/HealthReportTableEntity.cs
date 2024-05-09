@@ -12,6 +12,6 @@ internal class HealthReportTableEntity : ITableEntity
     public string RowKey { get; set; }
     public DateTimeOffset? Timestamp { get; set; }
     public ETag ETag { get; set; }
-    public HealthStatus HealthStatus { get; set; }
+    public HealthStatus Status { get; set; }
     public string Message { get; set; }
 }

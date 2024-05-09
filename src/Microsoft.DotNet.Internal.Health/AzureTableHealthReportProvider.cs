@@ -80,16 +80,16 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
         {
             await _tableClient.AddEntityAsync(new HealthReportTableEntity
             {
-                PartitionKey = Uri.EscapeDataString(partitionKey),
-                RowKey = Uri.EscapeDataString(rowKey),
-                HealthStatus = status,
+                PartitionKey = partitionKey,
+                RowKey = rowKey,
+                Status = status,
                 Message = message
             });
         }
         catch (Exception e)
         {
             // Crashing out a service trying to report health isn't useful, log that we failed and move on
-            _logger.LogError(e, "Unable to update health status for {service}/{subStatus}", serviceName, subStatusName);
+            _logger.LogError(e, "Unable to update health status for {service}/{instance}|{subStatus}", serviceName, instance, subStatusName);
         }
     }
 
@@ -106,7 +106,7 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
                 serviceName,
                 instance,
                 subStatus,
-                entity.HealthStatus,
+                entity.Status,
                 entity.Message,
                 entity.Timestamp.Value
             );
