@@ -76,7 +76,7 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
 
         try
         {
-            await _tableClient.AddEntityAsync(new HealthReportTableEntity
+            await _tableClient.UpsertEntityAsync(new HealthReportTableEntity
             {
                 PartitionKey = partitionKey,
                 RowKey = rowKey,
