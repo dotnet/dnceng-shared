@@ -293,15 +293,16 @@ public partial class ServiceHost
         );
         services.AddSingleton<ExponentialRetry>();
         services.Configure<ExponentialRetryOptions>(o => { });
-        services.Configure<AzureTableHealthReportingOptions>("HealthReportSettings", (o, s) => s.Bind(o));
         services.AddHealthReporting(
             b =>
             {
                 b.AddServiceFabric((o, p) => { });
                 b.AddLogging();
                 b.AddAzureTable((o, p) => {
-                    var configuration = p.GetRequiredService<AzureTableHealthReportingOptions>();
-                    o = configuration;
+                    var configuration = p.GetRequiredService<IConfiguration>();
+                    o.ConnectionString = configuration["ConnectionString"];
+                    o.TableName = configuration["TableName"];
+                    o.ManagedIdentityClientId = configuration["ManagedIdentityClientId"];
                 });
             });
         services.AddSingleton<ISystemClock, SystemClock>();

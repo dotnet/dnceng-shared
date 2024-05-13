@@ -19,6 +19,8 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
     private readonly ILogger<AzureTableHealthReportProvider> _logger;
     private readonly TableClient _tableClient;
 
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new JsonSerializerOptions {DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull};
+
     public AzureTableHealthReportProvider(
         IOptionsMonitor<AzureTableHealthReportingOptions> options,
         ILogger<AzureTableHealthReportProvider> logger)
