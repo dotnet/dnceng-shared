@@ -300,9 +300,7 @@ public partial class ServiceHost
                 b.AddLogging();
                 b.AddAzureTable((o, p) => {
                     var configuration = p.GetRequiredService<IConfiguration>();
-                    o.ConnectionString = configuration["ConnectionString"];
-                    o.TableName = configuration["TableName"];
-                    o.ManagedIdentityClientId = configuration["ManagedIdentityClientId"];
+                    configuration.GetSection("HealthReportSettings").Bind(o);
                 });
             });
         services.AddSingleton<ISystemClock, SystemClock>();
