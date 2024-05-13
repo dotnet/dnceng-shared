@@ -27,11 +27,11 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
 
         if (string.IsNullOrEmpty(options.CurrentValue.ConnectionString))
         {
-            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.ConnectionString)} missing in HealthReportSettings section of app settings");
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.ConnectionString)} missing in {AzureTableHealthReportingOptions.HealthReportSettingsSection} section of app settings");
         }
         if (string.IsNullOrEmpty(options.CurrentValue.TableName))
         {
-            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.TableName)} missing in HealthReportSettings section of app settings");
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.TableName)} missing in {AzureTableHealthReportingOptions.HealthReportSettingsSection} section of app settings");
         }
 
         DefaultAzureCredential credential = string.IsNullOrEmpty(options.CurrentValue.ManagedIdentityClientId)

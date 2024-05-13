@@ -5,6 +5,8 @@ namespace Microsoft.DotNet.Internal.Health;
 
 public class AzureTableHealthReportingOptions
 {
+    public const string HealthReportSettingsSection = "HealthReportSettings";
+
     public string ConnectionString { get; set; }
     public string TableName { get; set; }
     public string ManagedIdentityClientId { get; set; }
