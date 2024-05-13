@@ -24,19 +24,19 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
         ILogger<AzureTableHealthReportProvider> logger)
     {
         _logger = logger;
+
         if (string.IsNullOrEmpty(options.CurrentValue.ConnectionString))
         {
-            _logger.LogWarning("AzureTableHealth Connection String is not configured, no status will be written to table");
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.ConnectionString)} missing in HealthReportSettings section of app settings");
         }
-        DefaultAzureCredential credential;
-        if (string.IsNullOrEmpty(options.CurrentValue.ManagedIdentityClientId))
+        if (string.IsNullOrEmpty(options.CurrentValue.TableName))
         {
-            credential = new();
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.TableName)} missing in HealthReportSettings section of app settings");
         }
-        else
-        {
-            credential = new(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.CurrentValue.ManagedIdentityClientId });
-        }
+
+        DefaultAzureCredential credential = string.IsNullOrEmpty(options.CurrentValue.ManagedIdentityClientId)
+            ? new()
+            : new(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.CurrentValue.ManagedIdentityClientId });
         TableServiceClient tableServiceClient = new (new Uri(options.CurrentValue.ConnectionString), credential);
         _tableClient = tableServiceClient.GetTableClient(options.CurrentValue.TableName);
     }
