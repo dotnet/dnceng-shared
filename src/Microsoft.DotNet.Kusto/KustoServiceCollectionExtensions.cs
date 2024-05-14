@@ -9,12 +9,16 @@ namespace Microsoft.DotNet.Kusto;
 
 public static class KustoServiceCollectionExtensions
 {
-    public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, string sectionName)
+    public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, string sectionName, string ManagedIdentityId = null)
     {
         services.AddSingleton<IKustoClientProvider, KustoClientProvider>();
         services.Configure<KustoClientProviderOptions>(sectionName, (o, s) =>
         {
             s.Bind(o);
+            if (!string.IsNullOrEmpty(o.ManagedIdentityId))
+            {
+                o.ManagedIdentityId = ManagedIdentityId;
+            }
         });
         return services;
     }
@@ -22,7 +26,7 @@ public static class KustoServiceCollectionExtensions
     public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, Action<KustoClientProviderOptions> configure)
     {
         services.AddSingleton<IKustoClientProvider, KustoClientProvider>();
-        services.Configure<KustoClientProviderOptions>(configure);
+        services.Configure(configure);
         return services;
     }
 }

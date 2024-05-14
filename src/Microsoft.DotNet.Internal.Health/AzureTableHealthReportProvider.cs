@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Data.Tables;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
@@ -95,7 +96,7 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
     {
         string partitionKey = EscapeKeyField(serviceName);
 
-        var tableEntities = _tableClient.QueryAsync<HealthReportTableEntity>(x => x.PartitionKey == partitionKey);
+        AsyncPageable<HealthReportTableEntity> tableEntities = _tableClient.QueryAsync<HealthReportTableEntity>(x => x.PartitionKey == partitionKey);
 
         return await tableEntities.Select(entity =>
         {

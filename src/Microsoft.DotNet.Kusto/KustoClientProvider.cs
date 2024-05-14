@@ -54,16 +54,30 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
             if (value != null)
                 return value;
 
-            _kustoQueryProvider = value = KustoClientFactory.CreateCslQueryProvider(_options.CurrentValue.QueryConnectionString);
+            _kustoQueryProvider = value = KustoClientFactory.CreateCslQueryProvider(GetKustoConnectionStringBuilder());
             return value;
         }
     }
 
     private string DatabaseName => _options.CurrentValue.Database;
 
+    private string ConnectionString => _options.CurrentValue.QueryConnectionString;
+    private string ManagedIdentityId => _options.CurrentValue.ManagedIdentityId;
+
+    private KustoConnectionStringBuilder GetKustoConnectionStringBuilder()
+    {
+        KustoConnectionStringBuilder kcsb = new(ConnectionString);
+
+        if (string.IsNullOrEmpty(ManagedIdentityId))
+        {
+            return kcsb.WithAadSystemManagedIdentity();
+        }
+        return kcsb.WithAadUserManagedIdentity(ManagedIdentityId);
+    }
+
     public async Task<IDataReader> ExecuteKustoQueryAsync(KustoQuery query)
     {
-        var client = GetProvider();
+        using var client = GetProvider();
         var properties = KustoHelpers.BuildClientRequestProperties(query);
 
         string text = KustoHelpers.BuildQueryString(query);
@@ -89,7 +103,7 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
     /// <returns></returns>
     public async IAsyncEnumerable<object[]> ExecuteStreamableKustoQuery(KustoQuery query)
     {
-        var client = GetProvider();
+        using var client = GetProvider();
         var properties = KustoHelpers.BuildClientRequestProperties(query);
         properties.SetOption(ClientRequestProperties.OptionResultsProgressiveEnabled, true);
 

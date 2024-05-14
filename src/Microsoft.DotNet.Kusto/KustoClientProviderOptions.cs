@@ -7,4 +7,5 @@ public class KustoClientProviderOptions
 {
     public string QueryConnectionString { get; set; }
     public string Database { get; set; }
+    public string ManagedIdentityId { get; set; }
 }

@@ -10,11 +10,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client.AppConfig;
 
 namespace Microsoft.DotNet.Kusto;
 
@@ -175,6 +177,11 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     private readonly ConcurrentDictionary<string, IKustoIngestClient> _clients = new ConcurrentDictionary<string, IKustoIngestClient>();
     private readonly ConcurrentDictionary<string, ICslAdminProvider> _adminClients = new ConcurrentDictionary<string, ICslAdminProvider>();
 
+    private string QueryConnectionString => _kustoOptions.CurrentValue.QueryConnectionString;
+    private string IngestConnectionString => _kustoOptions.CurrentValue.IngestConnectionString;
+    private string DatabaseName => _kustoOptions.CurrentValue.Database;
+    private string ManagedIdentityId => _kustoOptions.CurrentValue.ManagedIdentityId;
+
     public KustoIngestClientFactory(IOptionsMonitor<KustoOptions> options)
     {
         _kustoOptions = options;
@@ -182,31 +189,37 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
 
     public IKustoIngestClient GetClient()
     {
-        string ingestConnectionString = _kustoOptions.CurrentValue.IngestConnectionString;
-
-        if (string.IsNullOrWhiteSpace(ingestConnectionString))
+        if (string.IsNullOrWhiteSpace(IngestConnectionString))
             throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.IngestConnectionString)} is not configured in settings or related KeyVault");
 
-        return _clients.GetOrAdd(ingestConnectionString, _ =>
+        return _clients.GetOrAdd(IngestConnectionString, _ =>
             // Since we will hand this out to multiple callers, it's important we don't let it get disposed.
-            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(ingestConnectionString))
+            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(GetKustoConnectionStringBuilder(IngestConnectionString)))
         );
     }
 
     public ICslAdminProvider GetAdminProvider()
     {
-        string queryConnectionString = _kustoOptions.CurrentValue.QueryConnectionString;
-        string defaultDatabaseName = _kustoOptions.CurrentValue.Database;
-
-        if (string.IsNullOrWhiteSpace(queryConnectionString))
+        if (string.IsNullOrWhiteSpace(QueryConnectionString))
             throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.QueryConnectionString)} is not configured in settings or related KeyVault");
 
-        if (string.IsNullOrWhiteSpace(defaultDatabaseName))
+        if (string.IsNullOrWhiteSpace(DatabaseName))
             throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.Database)} is not configured in settings or related KeyVault");
 
-        return _adminClients.GetOrAdd(queryConnectionString,
-            _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(queryConnectionString),
-                defaultDatabaseName));
+        return _adminClients.GetOrAdd(QueryConnectionString,
+            _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(GetKustoConnectionStringBuilder(QueryConnectionString)),
+                DatabaseName));
+    }
+
+    private KustoConnectionStringBuilder GetKustoConnectionStringBuilder(string connectionString)
+    {
+        KustoConnectionStringBuilder kcsb = new(connectionString);
+
+        if (string.IsNullOrEmpty(ManagedIdentityId))
+        {
+            return kcsb.WithAadSystemManagedIdentity();
+        }
+        return kcsb.WithAadUserManagedIdentity(ManagedIdentityId);
     }
 
     private class NonDisposable : IKustoIngestClient
@@ -300,4 +313,5 @@ public class KustoOptions
     public string QueryConnectionString { get; set; }
     public string IngestConnectionString { get; set; }
     public string Database { get; set; }
+    public string ManagedIdentityId { get; set; }
 }
