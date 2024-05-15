@@ -12,7 +12,7 @@ public static class KustoServiceCollectionExtensions
     public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, string sectionName, string ManagedIdentityId = null)
     {
         services.AddSingleton<IKustoClientProvider, KustoClientProvider>();
-        services.Configure<KustoClientProviderOptions>(sectionName, (o, s) =>
+        services.Configure<KustoOptions>(sectionName, (o, s) =>
         {
             s.Bind(o);
             if (!string.IsNullOrEmpty(o.ManagedIdentityId))
@@ -23,7 +23,7 @@ public static class KustoServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, Action<KustoClientProviderOptions> configure)
+    public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, Action<KustoOptions> configure)
     {
         services.AddSingleton<IKustoClientProvider, KustoClientProvider>();
         services.Configure(configure);

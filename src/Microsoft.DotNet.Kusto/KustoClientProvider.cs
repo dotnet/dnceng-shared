@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using Kusto.Cloud.Platform.Data;
 
@@ -18,24 +17,24 @@ namespace Microsoft.DotNet.Kusto;
 
 public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
 {
-    private readonly IOptionsMonitor<KustoClientProviderOptions> _options;
+    private readonly IOptionsMonitor<KustoOptions> _options;
     private readonly object _updateLock = new object();
     private ICslQueryProvider _kustoQueryProvider;
     private readonly IDisposable _monitor;
 
-    public KustoClientProvider(IOptionsMonitor<KustoClientProviderOptions> options)
+    public KustoClientProvider(IOptionsMonitor<KustoOptions> options)
     {
         _options = options;
         _monitor = options.OnChange(ClearProviderCache);
     }
 
-    public KustoClientProvider(IOptionsMonitor<KustoClientProviderOptions> options, ICslQueryProvider provider)
+    public KustoClientProvider(IOptionsMonitor<KustoOptions> options, ICslQueryProvider provider)
     {
         _options = options;
         _kustoQueryProvider = provider;
     }
 
-    private void ClearProviderCache(KustoClientProviderOptions arg1, string arg2)
+    private void ClearProviderCache(KustoOptions arg1, string arg2)
     {
         lock (_updateLock)
         {
@@ -61,12 +60,12 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
 
     private string DatabaseName => _options.CurrentValue.Database;
 
-    private string ConnectionString => _options.CurrentValue.QueryConnectionString;
+    private string KustoClusterUri => _options.CurrentValue.KustoClusterUri;
     private string ManagedIdentityId => _options.CurrentValue.ManagedIdentityId;
 
     private KustoConnectionStringBuilder GetKustoConnectionStringBuilder()
     {
-        KustoConnectionStringBuilder kcsb = new(ConnectionString);
+        KustoConnectionStringBuilder kcsb = new(KustoClusterUri);
 
         if (string.IsNullOrEmpty(ManagedIdentityId))
         {

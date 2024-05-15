@@ -3,9 +3,9 @@
 
 namespace Microsoft.DotNet.Kusto;
 
-public class KustoClientProviderOptions
+public class KustoOptions
 {
-    public string QueryConnectionString { get; set; }
+    public string KustoClusterUri { get; set; }
     public string Database { get; set; }
     public string ManagedIdentityId { get; set; }
 }
