@@ -20,7 +20,7 @@ public class HealthReportingBuilder
     public HealthReportingBuilder AddAzureTable(string connectionString, string tableName, string managedIdentityClientId)
     {
         return AddAzureTable((o, _) => {
-            o.ConnectionString = connectionString;
+            o.StorageAccountTablesUri = connectionString;
             o.TableName = tableName;
             o.ManagedIdentityClientId = managedIdentityClientId;
         });
