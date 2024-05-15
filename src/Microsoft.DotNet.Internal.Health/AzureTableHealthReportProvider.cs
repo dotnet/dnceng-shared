@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure;
@@ -26,9 +25,9 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
     {
         _logger = logger;
 
-        if (string.IsNullOrEmpty(options.CurrentValue.ConnectionString))
+        if (string.IsNullOrEmpty(options.CurrentValue.StorageAccountTablesUri))
         {
-            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.ConnectionString)} missing in {AzureTableHealthReportingOptions.HealthReportSettingsSection} section of app settings");
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.StorageAccountTablesUri)} missing in {AzureTableHealthReportingOptions.HealthReportSettingsSection} section of app settings");
         }
         if (string.IsNullOrEmpty(options.CurrentValue.TableName))
         {
@@ -38,7 +37,7 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
         DefaultAzureCredential credential = string.IsNullOrEmpty(options.CurrentValue.ManagedIdentityClientId)
             ? new()
             : new(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.CurrentValue.ManagedIdentityClientId });
-        TableServiceClient tableServiceClient = new (new Uri(options.CurrentValue.ConnectionString), credential);
+        TableServiceClient tableServiceClient = new (new Uri(options.CurrentValue.StorageAccountTablesUri), credential);
         _tableClient = tableServiceClient.GetTableClient(options.CurrentValue.TableName);
     }
 
@@ -98,18 +97,23 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider
 
         AsyncPageable<HealthReportTableEntity> tableEntities = _tableClient.QueryAsync<HealthReportTableEntity>(x => x.PartitionKey == partitionKey);
 
-        return await tableEntities.Select(entity =>
+        List<HealthReport> healthReports = new();
+        await foreach (var page in tableEntities.AsPages())
         {
-            var (instance, subStatus) = ParseRowKey(entity.RowKey);
-            return new HealthReport(
-                serviceName,
-                instance,
-                subStatus,
-                entity.Status,
-                entity.Message,
-                entity.Timestamp.Value
-            );
-        }).ToListAsync();
+            healthReports.AddRange(page.Values.Select(entity =>
+            {
+                var (instance, subStatus) = ParseRowKey(entity.RowKey);
+                return new HealthReport(
+                    serviceName,
+                    instance,
+                    subStatus,
+                    entity.Status,
+                    entity.Message,
+                    entity.Timestamp.Value
+                );
+            }));
+        }
+        return healthReports;
     }
 
     private class ValueList<T>
