@@ -4,59 +4,41 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Services.Utility;
+using Azure;
+using Azure.Data.Tables;
+using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.DotNet.Internal.Health;
 
-public sealed class AzureTableHealthReportProvider : IHealthReportProvider, IDisposable
+public sealed class AzureTableHealthReportProvider : IHealthReportProvider
 {
-    private readonly HttpClient _client;
-    private readonly IOptionsMonitor<AzureTableHealthReportingOptions> _options;
     private readonly ILogger<AzureTableHealthReportProvider> _logger;
-    private readonly ExponentialRetry _retry;
-        
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new JsonSerializerOptions {DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull};
+    private readonly TableClient _tableClient;
 
     public AzureTableHealthReportProvider(
         IOptionsMonitor<AzureTableHealthReportingOptions> options,
-        ILogger<AzureTableHealthReportProvider> logger,
-        IHttpClientFactory clientFactory,
-        ExponentialRetry retry)
+        ILogger<AzureTableHealthReportProvider> logger)
     {
-        _options = options;
         _logger = logger;
-        _retry = retry;
-        if (string.IsNullOrEmpty(options.CurrentValue.WriteSasUri))
-        {
-            _logger.LogWarning("AzureTableHealth WriteSas is not configured, no status will be written to table");
-        }
-        _client = clientFactory.CreateClient();
-        _client.DefaultRequestHeaders.Add("x-ms-version", "2013-08-15");
-    }
 
-    private bool TryGetUrlParts(out string baseUrl, out string sasQuery)
-    {
-        AzureTableHealthReportingOptions options = _options.CurrentValue;
-        if (string.IsNullOrEmpty(options.WriteSasUri))
+        if (string.IsNullOrEmpty(options.CurrentValue.StorageAccountTablesUri))
         {
-            baseUrl = null;
-            sasQuery = null;
-            return false;
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.StorageAccountTablesUri)} missing in {AzureTableHealthReportingOptions.HealthReportSettingsSection} section of app settings");
+        }
+        if (string.IsNullOrEmpty(options.CurrentValue.TableName))
+        {
+            throw new ArgumentException($"{nameof(AzureTableHealthReportingOptions.TableName)} missing in {AzureTableHealthReportingOptions.HealthReportSettingsSection} section of app settings");
         }
 
-        var builder = new UriBuilder(options.WriteSasUri);
-        sasQuery = builder.Query;
-        builder.Query = null;
-        baseUrl = builder.ToString();
-        return true;
+        DefaultAzureCredential credential = string.IsNullOrEmpty(options.CurrentValue.ManagedIdentityClientId)
+            ? new()
+            : new(new DefaultAzureCredentialOptions { ManagedIdentityClientId = options.CurrentValue.ManagedIdentityClientId });
+        TableServiceClient tableServiceClient = new (new Uri(options.CurrentValue.StorageAccountTablesUri), credential);
+        _tableClient = tableServiceClient.GetTableClient(options.CurrentValue.TableName);
     }
 
     private static string GetRowKey(string instance, string subStatus) => EscapeKeyField(instance ?? "") + "|" + EscapeKeyField(subStatus);
@@ -69,7 +51,7 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider, IDis
         return (UnescapeKeyField(parts[0]), subStatus);
     }
 
-    private static string EscapeKeyField(string value) =>
+    public static string EscapeKeyField(string value) =>
         value.Replace(":", "\0")
             .Replace("|", ":pipe:")
             .Replace("\\", ":back:")
@@ -78,7 +60,7 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider, IDis
             .Replace("?", ":question:")
             .Replace("\0", ":colon:");
 
-    private static string UnescapeKeyField(string value) =>
+    public static string UnescapeKeyField(string value) =>
         value.Replace(":colon:", "\0")
             .Replace(":pipe:", "|")
             .Replace(":back:", "\\")
@@ -89,87 +71,49 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider, IDis
 
     public async Task UpdateStatusAsync(string serviceName, string instance, string subStatusName, HealthStatus status, string message)
     {
-        if (!TryGetUrlParts(out string baseUrl, out string sasQuery))
-            return;
-
         string partitionKey = EscapeKeyField(serviceName);
         string rowKey = GetRowKey(instance, subStatusName);
 
-        async Task Attempt()
-        {
-            HttpContent content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(
-                new Entity {Status = status, Message = message},
-                s_jsonSerializerOptions
-            ));
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-
-            string requestUri =
-                $"{baseUrl}(PartitionKey='{Uri.EscapeDataString(partitionKey)}',RowKey='{Uri.EscapeDataString(rowKey)}'){sasQuery}";
-            using HttpResponseMessage response = await _client.PutAsync(requestUri, content).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-        }
-
         try
         {
-            await _retry.RetryAsync(
-                Attempt,
-                e => _logger.LogWarning("Failed to update status for {service}/{subStatus}, retrying",
-                    serviceName,
-                    subStatusName),
-                e => true
-            ).ConfigureAwait(false);
+            await _tableClient.UpsertEntityAsync(new HealthReportTableEntity
+            {
+                PartitionKey = partitionKey,
+                RowKey = rowKey,
+                Status = status,
+                Message = message
+            });
         }
         catch (Exception e)
         {
             // Crashing out a service trying to report health isn't useful, log that we failed and move on
-            _logger.LogError(e, "Unable to update health status for {service}/{subStatus}", serviceName, subStatusName);
+            _logger.LogError(e, "Unable to update health status for {service}/{instance}|{subStatus}", serviceName, instance, subStatusName);
         }
     }
 
-    public Task<IList<HealthReport>> GetAllStatusAsync(string serviceName)
+    public async Task<IList<HealthReport>> GetAllStatusAsync(string serviceName)
     {
-        if (!TryGetUrlParts(out string baseUrl, out string sasQuery))
-            return Task.FromResult<IList<HealthReport>>(Array.Empty<HealthReport>());
-
         string partitionKey = EscapeKeyField(serviceName);
-        string filter = $"PartitionKey eq '{partitionKey}'";
 
-        async Task<IList<HealthReport>> Attempt()
+        AsyncPageable<HealthReportTableEntity> tableEntities = _tableClient.QueryAsync<HealthReportTableEntity>(x => x.PartitionKey == partitionKey);
+
+        List<HealthReport> healthReports = new();
+        await foreach (var page in tableEntities.AsPages())
         {
-            using var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"{baseUrl}(){sasQuery}&$filter={Uri.EscapeDataString(filter)}"
-            );
-
-            request.Headers.Accept.ParseAdd("application/json;odata=nometadata");
-
-            using HttpResponseMessage response = await _client.SendAsync(request).ConfigureAwait(false);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return Array.Empty<HealthReport>();
-
-            response.EnsureSuccessStatusCode();
-            var entities = JsonSerializer.Deserialize<ValueList<Entity>>(await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false));
-            return entities.Value.Select(
-                e =>
-                {
-                    var (instance, subStatus) = ParseRowKey(e.RowKey);
-                    return new HealthReport(
-                        serviceName,
-                        instance,
-                        subStatus,
-                        e.Status,
-                        e.Message,
-                        e.Timestamp.Value
-                    );
-                }
-            ).ToList();
+            healthReports.AddRange(page.Values.Select(entity =>
+            {
+                var (instance, subStatus) = ParseRowKey(entity.RowKey);
+                return new HealthReport(
+                    serviceName,
+                    instance,
+                    subStatus,
+                    entity.Status,
+                    entity.Message,
+                    entity.Timestamp.Value
+                );
+            }));
         }
-
-        return _retry.RetryAsync(
-            Attempt,
-            e => _logger.LogWarning(e, "Failed to fetch status, trying again"),
-            _ => true);
+        return healthReports;
     }
 
     private class ValueList<T>
@@ -185,10 +129,5 @@ public sealed class AzureTableHealthReportProvider : IHealthReportProvider, IDis
         public HealthStatus Status { get; set; }
         public string Message { get; set; }
         public string RowKey { get; set; }
-    }
-
-    public void Dispose()
-    {
-        _client?.Dispose();
     }
 }

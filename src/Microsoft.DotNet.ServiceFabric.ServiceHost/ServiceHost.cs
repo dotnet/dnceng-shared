@@ -298,7 +298,10 @@ public partial class ServiceHost
             {
                 b.AddServiceFabric((o, p) => { });
                 b.AddLogging();
-                b.AddAzureTable((o, p) => o.WriteSasUri = p.GetRequiredService<IConfiguration>()["HealthTableUri"]);
+                b.AddAzureTable((o, p) => {
+                    var configuration = p.GetRequiredService<IConfiguration>();
+                    configuration.GetSection(AzureTableHealthReportingOptions.HealthReportSettingsSection).Bind(o);
+                });
             });
         services.AddSingleton<ISystemClock, SystemClock>();
         services.AddSingleton<Lifecycle, AppInsightsFlushLifecycle>();

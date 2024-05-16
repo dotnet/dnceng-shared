@@ -12,6 +12,7 @@
          newer copy of this package loaded. When updating one, be aware of the other to prevent runtime issues
          See: https://github.com/dotnet/arcade/blob/main/eng/Versions.props -->
     <PackageVersion Include="Azure.Data.AppConfiguration" Version="1.0.0" />
+    <PackageVersion Include="Azure.Data.Tables" Version="12.8.3" />
     <PackageVersion Include="Azure.Identity" Version="1.10.3" />
     <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.13.1" />
