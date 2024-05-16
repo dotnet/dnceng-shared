@@ -70,7 +70,7 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
         }
         if (string.IsNullOrEmpty(DatabaseName))
         {
-            throw new ArgumentException($"{nameof{KustoOptions.Database}} is not configured in app settings");
+            throw new ArgumentException($"{nameof(KustoOptions.Database)} is not configured in app settings");
         }
 
         KustoConnectionStringBuilder kcsb = new(KustoClusterUri);

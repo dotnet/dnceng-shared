@@ -6,6 +6,7 @@ namespace Microsoft.DotNet.Kusto;
 public class KustoOptions
 {
     public string KustoClusterUri { get; set; }
+    public string KustoIngestionUri { get; set; }
     public string Database { get; set; }
     public string ManagedIdentityId { get; set; }
 }

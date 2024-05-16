@@ -177,6 +177,7 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     private readonly ConcurrentDictionary<string, ICslAdminProvider> _adminClients = new ConcurrentDictionary<string, ICslAdminProvider>();
 
     private string KustoClusterUri => _kustoOptions.CurrentValue.KustoClusterUri;
+    private string KustoIngestionUri => _kustoOptions.CurrentValue.KustoIngestionUri;
     private string DatabaseName => _kustoOptions.CurrentValue.Database;
     private string ManagedIdentityId => _kustoOptions.CurrentValue.ManagedIdentityId;
 
@@ -187,12 +188,12 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
 
     public IKustoIngestClient GetClient()
     {
-        if (string.IsNullOrWhiteSpace(KustoClusterUri))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoClusterUri)} is not configured in settings");
+        if (string.IsNullOrWhiteSpace(KustoIngestionUri))
+            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoIngestionUri)} is not configured in settings");
 
         return _clients.GetOrAdd(KustoClusterUri, _ =>
             // Since we will hand this out to multiple callers, it's important we don't let it get disposed.
-            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(GetKustoConnectionStringBuilder(KustoClusterUri)))
+            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(GetKustoConnectionStringBuilder(KustoIngestionUri)))
         );
     }
 
