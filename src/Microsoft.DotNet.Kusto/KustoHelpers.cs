@@ -188,7 +188,7 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     public IKustoIngestClient GetClient()
     {
         if (string.IsNullOrWhiteSpace(KustoClusterUri))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoClusterUri)} is not configured in settings or related KeyVault");
+            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoClusterUri)} is not configured in settings");
 
         return _clients.GetOrAdd(KustoClusterUri, _ =>
             // Since we will hand this out to multiple callers, it's important we don't let it get disposed.
@@ -199,10 +199,10 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     public ICslAdminProvider GetAdminProvider()
     {
         if (string.IsNullOrWhiteSpace(KustoClusterUri))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoClusterUri)} is not configured in settings or related KeyVault");
+            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoClusterUri)} is not configured in settings");
 
         if (string.IsNullOrWhiteSpace(DatabaseName))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.Database)} is not configured in settings or related KeyVault");
+            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.Database)} is not configured in settings");
 
         return _adminClients.GetOrAdd(KustoClusterUri,
             _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(GetKustoConnectionStringBuilder(KustoClusterUri)),

@@ -59,12 +59,20 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
     }
 
     private string DatabaseName => _options.CurrentValue.Database;
-
     private string KustoClusterUri => _options.CurrentValue.KustoClusterUri;
     private string ManagedIdentityId => _options.CurrentValue.ManagedIdentityId;
 
     private KustoConnectionStringBuilder GetKustoConnectionStringBuilder()
     {
+        if (string.IsNullOrEmpty(KustoClusterUri))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.KustoClusterUri)} is not configured in app settings");
+        }
+        if (string.IsNullOrEmpty(DatabaseName))
+        {
+            throw new ArgumentException($"{nameof{KustoOptions.Database}} is not configured in app settings");
+        }
+
         KustoConnectionStringBuilder kcsb = new(KustoClusterUri);
 
         if (string.IsNullOrEmpty(ManagedIdentityId))
