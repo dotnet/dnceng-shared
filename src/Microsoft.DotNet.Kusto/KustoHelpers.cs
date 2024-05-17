@@ -180,6 +180,7 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     private string KustoIngestionUri => _kustoOptions.CurrentValue.KustoIngestionUri;
     private string DatabaseName => _kustoOptions.CurrentValue.Database;
     private string ManagedIdentityId => _kustoOptions.CurrentValue.ManagedIdentityId;
+    private bool UseAzCliAuthentication => _options.CurrentValue.UseAzCliAuthentication;
 
     public KustoIngestClientFactory(IOptionsMonitor<KustoOptions> options)
     {
@@ -213,6 +214,11 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     private KustoConnectionStringBuilder GetKustoConnectionStringBuilder(string connectionString)
     {
         KustoConnectionStringBuilder kcsb = new(connectionString);
+
+        if (UseAzCliAuthentication)
+        {
+            return kcsb.WithAadAzCliAuthentication();
+        }
 
         if (string.IsNullOrEmpty(ManagedIdentityId))
         {

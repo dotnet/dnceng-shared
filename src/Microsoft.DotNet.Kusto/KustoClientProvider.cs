@@ -61,6 +61,7 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
     private string DatabaseName => _options.CurrentValue.Database;
     private string KustoClusterUri => _options.CurrentValue.KustoClusterUri;
     private string ManagedIdentityId => _options.CurrentValue.ManagedIdentityId;
+    private bool UseAzCliAuthentication => _options.CurrentValue.UseAzCliAuthentication;
 
     private KustoConnectionStringBuilder GetKustoConnectionStringBuilder()
     {
@@ -74,6 +75,11 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
         }
 
         KustoConnectionStringBuilder kcsb = new(KustoClusterUri);
+
+        if (UseAzCliAuthentication)
+        {
+            return kcsb.WithAadAzCliAuthentication();
+        }
 
         if (string.IsNullOrEmpty(ManagedIdentityId))
         {
