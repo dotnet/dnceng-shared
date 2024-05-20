@@ -53,44 +53,22 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
             if (value != null)
                 return value;
 
-            _kustoQueryProvider = value = KustoClientFactory.CreateCslQueryProvider(GetKustoConnectionStringBuilder());
+            _kustoQueryProvider = value = KustoClientFactory.CreateCslQueryProvider(KustoHelpers.GetKustoConnectionStringBuilder(_options));
             return value;
         }
     }
 
     private string DatabaseName => _options.CurrentValue.Database;
-    private string KustoClusterUri => _options.CurrentValue.KustoClusterUri;
-    private string ManagedIdentityId => _options.CurrentValue.ManagedIdentityId;
-    private bool UseAzCliAuthentication => _options.CurrentValue.UseAzCliAuthentication;
 
-    private KustoConnectionStringBuilder GetKustoConnectionStringBuilder()
+    public async Task<IDataReader> ExecuteKustoQueryAsync(KustoQuery query)
     {
-        if (string.IsNullOrEmpty(KustoClusterUri))
-        {
-            throw new ArgumentException($"{nameof(KustoOptions.KustoClusterUri)} is not configured in app settings");
-        }
+        using var client = GetProvider();
+
         if (string.IsNullOrEmpty(DatabaseName))
         {
             throw new ArgumentException($"{nameof(KustoOptions.Database)} is not configured in app settings");
         }
 
-        KustoConnectionStringBuilder kcsb = new(KustoClusterUri);
-
-        if (UseAzCliAuthentication)
-        {
-            return kcsb.WithAadAzCliAuthentication();
-        }
-
-        if (string.IsNullOrEmpty(ManagedIdentityId))
-        {
-            return kcsb.WithAadSystemManagedIdentity();
-        }
-        return kcsb.WithAadUserManagedIdentity(ManagedIdentityId);
-    }
-
-    public async Task<IDataReader> ExecuteKustoQueryAsync(KustoQuery query)
-    {
-        using var client = GetProvider();
         var properties = KustoHelpers.BuildClientRequestProperties(query);
 
         string text = KustoHelpers.BuildQueryString(query);
@@ -117,6 +95,12 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
     public async IAsyncEnumerable<object[]> ExecuteStreamableKustoQuery(KustoQuery query)
     {
         using var client = GetProvider();
+
+        if (string.IsNullOrEmpty(DatabaseName))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.Database)} is not configured in app settings");
+        }
+
         var properties = KustoHelpers.BuildClientRequestProperties(query);
         properties.SetOption(ClientRequestProperties.OptionResultsProgressiveEnabled, true);
 

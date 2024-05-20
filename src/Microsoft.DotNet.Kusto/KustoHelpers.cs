@@ -16,6 +16,7 @@ using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client.AppConfig;
 
 namespace Microsoft.DotNet.Kusto;
 
@@ -168,6 +169,28 @@ public static class KustoHelpers
 
         return text;
     }
+
+    public static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(IOptionsMonitor<KustoOptions> kustoOptions)
+    {
+        if (string.IsNullOrEmpty(kustoOptions.CurrentValue.KustoClusterUri))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.KustoClusterUri)} is not configured in app settings");
+        }
+
+
+        KustoConnectionStringBuilder kcsb = new(kustoOptions.CurrentValue.KustoClusterUri);
+
+        if (kustoOptions.CurrentValue.UseAzCliAuthentication)
+        {
+            return kcsb.WithAadAzCliAuthentication();
+        }
+
+        if (string.IsNullOrEmpty(kustoOptions.CurrentValue.ManagedIdentityId))
+        {
+            return kcsb.WithAadSystemManagedIdentity();
+        }
+        return kcsb.WithAadUserManagedIdentity(kustoOptions.CurrentValue.ManagedIdentityId);
+    }
 }
 
 public class KustoIngestClientFactory : IKustoIngestClientFactory
@@ -179,8 +202,6 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     private string KustoClusterUri => _kustoOptions.CurrentValue.KustoClusterUri;
     private string KustoIngestionUri => _kustoOptions.CurrentValue.KustoIngestionUri;
     private string DatabaseName => _kustoOptions.CurrentValue.Database;
-    private string ManagedIdentityId => _kustoOptions.CurrentValue.ManagedIdentityId;
-    private bool UseAzCliAuthentication => _options.CurrentValue.UseAzCliAuthentication;
 
     public KustoIngestClientFactory(IOptionsMonitor<KustoOptions> options)
     {
@@ -190,41 +211,25 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     public IKustoIngestClient GetClient()
     {
         if (string.IsNullOrWhiteSpace(KustoIngestionUri))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoIngestionUri)} is not configured in settings");
+            throw new InvalidOperationException($"Kusto {nameof(KustoOptions.KustoIngestionUri)} is not configured in settings");
 
         return _clients.GetOrAdd(KustoClusterUri, _ =>
             // Since we will hand this out to multiple callers, it's important we don't let it get disposed.
-            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(GetKustoConnectionStringBuilder(KustoIngestionUri)))
+            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(KustoHelpers.GetKustoConnectionStringBuilder(_kustoOptions)))
         );
     }
 
     public ICslAdminProvider GetAdminProvider()
     {
         if (string.IsNullOrWhiteSpace(KustoClusterUri))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.KustoClusterUri)} is not configured in settings");
+            throw new InvalidOperationException($"Kusto {nameof(KustoOptions.KustoClusterUri)} is not configured in settings");
 
         if (string.IsNullOrWhiteSpace(DatabaseName))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.Database)} is not configured in settings");
+            throw new InvalidOperationException($"Kusto {nameof(KustoOptions.Database)} is not configured in settings");
 
         return _adminClients.GetOrAdd(KustoClusterUri,
-            _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(GetKustoConnectionStringBuilder(KustoClusterUri)),
+            _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(KustoHelpers.GetKustoConnectionStringBuilder(_kustoOptions)),
                 DatabaseName));
-    }
-
-    private KustoConnectionStringBuilder GetKustoConnectionStringBuilder(string connectionString)
-    {
-        KustoConnectionStringBuilder kcsb = new(connectionString);
-
-        if (UseAzCliAuthentication)
-        {
-            return kcsb.WithAadAzCliAuthentication();
-        }
-
-        if (string.IsNullOrEmpty(ManagedIdentityId))
-        {
-            return kcsb.WithAadSystemManagedIdentity();
-        }
-        return kcsb.WithAadUserManagedIdentity(ManagedIdentityId);
     }
 
     private class NonDisposable : IKustoIngestClient

@@ -14,7 +14,7 @@ using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Exceptions;
 using Kusto.Data.Results;
-using Microsoft.DotNet.Internal.Testing.Utility;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 
@@ -25,6 +25,12 @@ namespace Microsoft.DotNet.Kusto.Tests;
 [TestFixture]
 public class KustoClientProviderTests
 {
+    private static readonly IOptionsMonitor<KustoOptions> _kustoOptions = MockOptionMonitor.Create(new KustoOptions
+    {
+        KustoClusterUri = "IGNORED-CONNECTION-STRING",
+        Database = "TEST-DATABASE",
+    });
+
     [Test]
     public async Task NoParameterQueryIsPassedPlainly()
     {
@@ -37,9 +43,7 @@ public class KustoClientProviderTests
                 q.ExecuteQueryAsync(Capture.In(dbNames), Capture.In(queries), Capture.In(properties), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(reader));
             
-        using (var client = new KustoClientProvider(MockOptionMonitor.Create(new KustoOptions
-                       {KustoClusterUri = "IGNORED-CONNECTION-STRING", Database = "TEST-DATABASE",}),
-                   queryProvider.Object))
+        using (var client = new KustoClientProvider(_kustoOptions, queryProvider.Object))
         {
             IDataReader result = await client.ExecuteKustoQueryAsync(new KustoQuery("basicQuery"));
             reader.Should().BeSameAs(result);
@@ -62,9 +66,7 @@ public class KustoClientProviderTests
                 q.ExecuteQueryAsync(Capture.In(dbNames), Capture.In(queries), Capture.In(properties), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(reader));
 
-        using (var client = new KustoClientProvider(MockOptionMonitor.Create(new KustoOptions
-                       {KustoClusterUri = "IGNORED-CONNECTION-STRING", Database = "TEST-DATABASE",}),
-                   queryProvider.Object))
+        using (var client = new KustoClientProvider(_kustoOptions, queryProvider.Object))
         {
             var query = new KustoQuery {Text = "basicQuery"};
             IDataReader result = await client.ExecuteKustoQueryAsync(query);
@@ -89,9 +91,7 @@ public class KustoClientProviderTests
                 q.ExecuteQueryAsync(Capture.In(dbNames), Capture.In(queries), Capture.In(properties), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(reader));
 
-        using (var client = new KustoClientProvider(MockOptionMonitor.Create(new KustoOptions
-                       {KustoClusterUri = "IGNORED-CONNECTION-STRING", Database = "TEST-DATABASE",}),
-                   queryProvider.Object))
+        using (var client = new KustoClientProvider(_kustoOptions, queryProvider.Object))
         {
             var query = new KustoQuery("basicQuery | where Id = _id and Name = _name",
                 new KustoParameter("_id", 9274, KustoDataType.Int));
@@ -135,9 +135,7 @@ public class KustoClientProviderTests
                 q.ExecuteQueryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ClientRequestProperties>(), It.IsAny<CancellationToken>()))
             .Throws(new FakeSemanticException());
 
-        using (var client = new KustoClientProvider(MockOptionMonitor.Create(new KustoOptions
-                       {KustoClusterUri = "IGNORED-CONNECTION-STRING", Database = "TEST-DATABASE",}),
-                   queryProvider.Object))
+        using (var client = new KustoClientProvider(_kustoOptions, queryProvider.Object))
         {
             (await client.ExecuteKustoQueryAsync(new KustoQuery("basicQuery"))).Should().BeNull();
         }
@@ -176,9 +174,7 @@ public class KustoClientProviderTests
                 q.ExecuteQueryV2Async(Capture.In(dbNames), Capture.In(queries), Capture.In(properties), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(returnDataSet));
 
-        using (var client = new KustoClientProvider(MockOptionMonitor.Create(new KustoOptions
-                       { KustoClusterUri = "IGNORED-CONNECTION-STRING", Database = "TEST-DATABASE", }),
-                   queryProvider.Object))
+        using (var client = new KustoClientProvider(_kustoOptions, queryProvider.Object))
         {
             var query = new KustoQuery("basicQuery | where Id = _id and Name = _name",
                 new KustoParameter("_id", 9274, KustoDataType.Int));
@@ -235,9 +231,7 @@ public class KustoClientProviderTests
                 q.ExecuteQueryV2Async(Capture.In(dbNames), Capture.In(queries), Capture.In(properties), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(returnDataSet));
 
-        using (var client = new KustoClientProvider(MockOptionMonitor.Create(new KustoOptions
-                       { KustoClusterUri = "IGNORED-CONNECTION-STRING", Database = "TEST-DATABASE", }),
-                   queryProvider.Object))
+        using (var client = new KustoClientProvider(_kustoOptions, queryProvider.Object))
         {
             var query = new KustoQuery("basicQuery | where Id = _id and Name = _name",
                 new KustoParameter("_id", 9274, KustoDataType.Int));
