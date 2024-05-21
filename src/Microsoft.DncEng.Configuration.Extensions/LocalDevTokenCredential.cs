@@ -1,6 +1,3 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -136,7 +133,7 @@ public class LocalDevTokenCredential : TokenCredential
             _account = (await _app.GetAccountsAsync()).FirstOrDefault();
             if (_account == null || uiRequired)
             {
-                var deviceCodeResult = await _app.AcquireTokenWithDeviceCode(requestContext.Scopes, DeviceCodeResultCallback)
+                var deviceCodeResult = await _app.AcquireTokenInteractive(requestContext.Scopes)
                     .ExecuteAsync(cancellationToken);
                 _account = deviceCodeResult.Account;
                 return new AccessToken(deviceCodeResult.AccessToken, deviceCodeResult.ExpiresOn);
