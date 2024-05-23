@@ -2,13 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
@@ -136,36 +133,19 @@ public class LocalDevTokenCredential : TokenCredential
             _account = (await _app.GetAccountsAsync()).FirstOrDefault();
             if (_account == null || uiRequired)
             {
-                var deviceCodeResult = await _app.AcquireTokenWithDeviceCode(requestContext.Scopes, DeviceCodeResultCallback)
+                var deviceCodeResult = await _app.AcquireTokenInteractive(requestContext.Scopes)
                     .ExecuteAsync(cancellationToken);
                 _account = deviceCodeResult.Account;
                 return new AccessToken(deviceCodeResult.AccessToken, deviceCodeResult.ExpiresOn);
             }
         }
-            
+
         // a recursive call here is fine because there wasn't any better way to do this, and this is local dev only
         // This return statement will only get executed when `_account` was null at the top of the method,
         // and it becomes non-null at line 91
         // When that happens the function will either return the access token from AcquireTokenSilentAsync,
         // or will hit the `uiRequired` branch and call AcquireTokenWithDeviceCode and return
         return await GetTokenAsync(requestContext, cancellationToken);
-    }
-
-    [MethodImpl(MethodImplOptions.NoOptimization)]
-    private static Task DeviceCodeResultCallback(DeviceCodeResult arg)
-    {
-        if (!IsBoostrapping)
-        {
-            throw new InvalidOperationException("Authentication is required, please re-run bootstrap.");
-        }
-        var userCode = arg.UserCode;
-        var verificationUrl = arg.VerificationUrl;
-
-        Console.WriteLine($"To sign in, use a web browser to open the page {verificationUrl} and enter the code {userCode} to authenticate.");
-        Console.WriteLine("Press any key when finished...");
-        Console.ReadKey(true);
-
-        return Task.CompletedTask;
     }
 
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
