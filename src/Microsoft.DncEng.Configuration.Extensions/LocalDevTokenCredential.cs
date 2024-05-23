@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Threading;
@@ -140,7 +139,7 @@ public class LocalDevTokenCredential : TokenCredential
                 return new AccessToken(interactiveToken.AccessToken, interactiveToken.ExpiresOn);
             }
         }
-            
+
         // a recursive call here is fine because there wasn't any better way to do this, and this is local dev only
         // This return statement will only get executed when `_account` was null at the top of the method,
         // and it becomes non-null at line 91
