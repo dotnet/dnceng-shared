@@ -134,10 +134,10 @@ public class LocalDevTokenCredential : TokenCredential
             _account = (await _app.GetAccountsAsync()).FirstOrDefault();
             if (_account == null || uiRequired)
             {
-                var deviceCodeResult = await _app.AcquireTokenInteractive(requestContext.Scopes)
+                var interactiveToken = await _app.AcquireTokenInteractive(requestContext.Scopes)
                     .ExecuteAsync(cancellationToken);
-                _account = deviceCodeResult.Account;
-                return new AccessToken(deviceCodeResult.AccessToken, deviceCodeResult.ExpiresOn);
+                _account = interactiveToken.Account;
+                return new AccessToken(interactiveToken.AccessToken, interactiveToken.ExpiresOn);
             }
         }
             
@@ -147,23 +147,6 @@ public class LocalDevTokenCredential : TokenCredential
         // When that happens the function will either return the access token from AcquireTokenSilentAsync,
         // or will hit the `uiRequired` branch and call AcquireTokenWithDeviceCode and return
         return await GetTokenAsync(requestContext, cancellationToken);
-    }
-
-    [MethodImpl(MethodImplOptions.NoOptimization)]
-    private static Task DeviceCodeResultCallback(DeviceCodeResult arg)
-    {
-        if (!IsBoostrapping)
-        {
-            throw new InvalidOperationException("Authentication is required, please re-run bootstrap.");
-        }
-        var userCode = arg.UserCode;
-        var verificationUrl = arg.VerificationUrl;
-
-        Console.WriteLine($"To sign in, use a web browser to open the page {verificationUrl} and enter the code {userCode} to authenticate.");
-        Console.WriteLine("Press any key when finished...");
-        Console.ReadKey(true);
-
-        return Task.CompletedTask;
     }
 
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
