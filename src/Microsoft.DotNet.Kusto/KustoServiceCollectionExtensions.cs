@@ -12,17 +12,17 @@ public static class KustoServiceCollectionExtensions
     public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, string sectionName)
     {
         services.AddSingleton<IKustoClientProvider, KustoClientProvider>();
-        services.Configure<KustoClientProviderOptions>(sectionName, (o, s) =>
+        services.Configure<KustoOptions>(sectionName, (o, s) =>
         {
             s.Bind(o);
         });
         return services;
     }
 
-    public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, Action<KustoClientProviderOptions> configure)
+    public static IServiceCollection AddKustoClientProvider(this IServiceCollection services, Action<KustoOptions> configure)
     {
         services.AddSingleton<IKustoClientProvider, KustoClientProvider>();
-        services.Configure<KustoClientProviderOptions>(configure);
+        services.Configure(configure);
         return services;
     }
 }

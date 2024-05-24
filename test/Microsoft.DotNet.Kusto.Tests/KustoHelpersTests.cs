@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Kusto.Data.Common;
 using Kusto.Ingest;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.DotNet.Internal.Testing.Utility;
 using Moq;
 using NUnit.Framework;

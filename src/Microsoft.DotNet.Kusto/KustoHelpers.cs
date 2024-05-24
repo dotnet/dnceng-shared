@@ -10,11 +10,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client.AppConfig;
 
 namespace Microsoft.DotNet.Kusto;
 
@@ -167,6 +169,28 @@ public static class KustoHelpers
 
         return text;
     }
+
+    public static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(IOptionsMonitor<KustoOptions> kustoOptions)
+    {
+        if (string.IsNullOrEmpty(kustoOptions.CurrentValue.KustoClusterUri))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.KustoClusterUri)} is not configured in app settings");
+        }
+
+
+        KustoConnectionStringBuilder kcsb = new(kustoOptions.CurrentValue.KustoClusterUri);
+
+        if (kustoOptions.CurrentValue.UseAzCliAuthentication)
+        {
+            return kcsb.WithAadAzCliAuthentication();
+        }
+
+        if (string.IsNullOrEmpty(kustoOptions.CurrentValue.ManagedIdentityId))
+        {
+            return kcsb.WithAadSystemManagedIdentity();
+        }
+        return kcsb.WithAadUserManagedIdentity(kustoOptions.CurrentValue.ManagedIdentityId);
+    }
 }
 
 public class KustoIngestClientFactory : IKustoIngestClientFactory
@@ -175,6 +199,10 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
     private readonly ConcurrentDictionary<string, IKustoIngestClient> _clients = new ConcurrentDictionary<string, IKustoIngestClient>();
     private readonly ConcurrentDictionary<string, ICslAdminProvider> _adminClients = new ConcurrentDictionary<string, ICslAdminProvider>();
 
+    private string KustoClusterUri => _kustoOptions.CurrentValue.KustoClusterUri;
+    private string KustoIngestionUri => _kustoOptions.CurrentValue.KustoIngestionUri;
+    private string DatabaseName => _kustoOptions.CurrentValue.Database;
+
     public KustoIngestClientFactory(IOptionsMonitor<KustoOptions> options)
     {
         _kustoOptions = options;
@@ -182,31 +210,26 @@ public class KustoIngestClientFactory : IKustoIngestClientFactory
 
     public IKustoIngestClient GetClient()
     {
-        string ingestConnectionString = _kustoOptions.CurrentValue.IngestConnectionString;
+        if (string.IsNullOrWhiteSpace(KustoIngestionUri))
+            throw new InvalidOperationException($"Kusto {nameof(KustoOptions.KustoIngestionUri)} is not configured in settings");
 
-        if (string.IsNullOrWhiteSpace(ingestConnectionString))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.IngestConnectionString)} is not configured in settings or related KeyVault");
-
-        return _clients.GetOrAdd(ingestConnectionString, _ =>
+        return _clients.GetOrAdd(KustoClusterUri, _ =>
             // Since we will hand this out to multiple callers, it's important we don't let it get disposed.
-            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(ingestConnectionString))
+            new NonDisposable(KustoIngestFactory.CreateQueuedIngestClient(KustoHelpers.GetKustoConnectionStringBuilder(_kustoOptions)))
         );
     }
 
     public ICslAdminProvider GetAdminProvider()
     {
-        string queryConnectionString = _kustoOptions.CurrentValue.QueryConnectionString;
-        string defaultDatabaseName = _kustoOptions.CurrentValue.Database;
+        if (string.IsNullOrWhiteSpace(KustoClusterUri))
+            throw new InvalidOperationException($"Kusto {nameof(KustoOptions.KustoClusterUri)} is not configured in settings");
 
-        if (string.IsNullOrWhiteSpace(queryConnectionString))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.QueryConnectionString)} is not configured in settings or related KeyVault");
+        if (string.IsNullOrWhiteSpace(DatabaseName))
+            throw new InvalidOperationException($"Kusto {nameof(KustoOptions.Database)} is not configured in settings");
 
-        if (string.IsNullOrWhiteSpace(defaultDatabaseName))
-            throw new InvalidOperationException($"Kusto {nameof(_kustoOptions.CurrentValue.Database)} is not configured in settings or related KeyVault");
-
-        return _adminClients.GetOrAdd(queryConnectionString,
-            _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(queryConnectionString),
-                defaultDatabaseName));
+        return _adminClients.GetOrAdd(KustoClusterUri,
+            _ => new NonDisposableCslAdmin(KustoClientFactory.CreateCslAdminProvider(KustoHelpers.GetKustoConnectionStringBuilder(_kustoOptions)),
+                DatabaseName));
     }
 
     private class NonDisposable : IKustoIngestClient
@@ -293,11 +316,4 @@ public interface IKustoIngestClientFactory
 {
     IKustoIngestClient GetClient();
     ICslAdminProvider GetAdminProvider();
-}
-
-public class KustoOptions
-{
-    public string QueryConnectionString { get; set; }
-    public string IngestConnectionString { get; set; }
-    public string Database { get; set; }
 }
