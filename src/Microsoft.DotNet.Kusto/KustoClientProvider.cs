@@ -62,7 +62,7 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
 
     public async Task<IDataReader> ExecuteKustoQueryAsync(KustoQuery query)
     {
-        using var client = GetProvider();
+        var client = GetProvider();
 
         if (string.IsNullOrEmpty(DatabaseName))
         {
@@ -94,7 +94,7 @@ public sealed class KustoClientProvider : IKustoClientProvider, IDisposable
     /// <returns></returns>
     public async IAsyncEnumerable<object[]> ExecuteStreamableKustoQuery(KustoQuery query)
     {
-        using var client = GetProvider();
+        var client = GetProvider();
 
         if (string.IsNullOrEmpty(DatabaseName))
         {
