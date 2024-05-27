@@ -144,7 +144,7 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
 
             if (user == null)
             {
-                return AuthenticateResult.Fail("Invalid Token");
+                return AuthenticateResult.NoResult();
             }
 
             ClaimsPrincipal principal = await SignInManager.CreateUserPrincipalAsync(user);
@@ -164,9 +164,9 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
             return AuthenticateResult.Success(
                 new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return AuthenticateResult.Fail(ex);
+            return AuthenticateResult.NoResult();
         }
     }
 

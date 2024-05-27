@@ -7,13 +7,15 @@ namespace Microsoft.DotNet.Web.Authentication.AccessToken;
 
 public class PersonalAccessTokenAuthenticationOptions<TUser> : AuthenticationSchemeOptions
 {
+    public const int DefaultPasswordSize = 16;
+
     public new PersonalAccessTokenEvents<TUser> Events
     {
         get => (PersonalAccessTokenEvents<TUser>) base.Events;
         set => base.Events = value;
     }
 
-    public int PasswordSize { get; set; } = 16;
+    public int PasswordSize { get; set; } = DefaultPasswordSize;
 
     public string TokenName { get; set; } = "Bearer";
 }
