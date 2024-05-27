@@ -125,6 +125,11 @@ public class LocalDevTokenCredential : TokenCredential
                 // will be handled lower
                 uiRequired = true;
             }
+            catch (MsalClientException e) when (e.ErrorCode == "multiple_matching_tokens_detected")
+            {
+                // will be handled lower
+                uiRequired = true;
+            }
         }
 
         // we give the lock a total wait time of 1 hour because the breakpoint to do device code authentication is inside the lock
