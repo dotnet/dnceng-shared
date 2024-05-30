@@ -7,4 +7,5 @@ public class MemoryDumpOptions
 {
     public string ContainerUri { get; set; }
     public string[] IgnoreDumpPatterns { get; set; }
+    public string ManagedIdentityId { get; set; }
 }

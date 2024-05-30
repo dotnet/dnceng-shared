@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using JetBrains.Annotations;
 using Microsoft.DncEng.Configuration.Extensions;
@@ -27,7 +28,7 @@ public sealed class CoreHealthMonitorService : IServiceImplementation
 {
     private readonly IInstanceHealthReporter<CoreHealthMonitorService> _health;
     private readonly IOptions<DriveMonitorOptions> _driveOptions;
-    private readonly IOptionsMonitor<MemoryDumpOptions> _memoryDumpOptions;
+    private readonly IOptions<MemoryDumpOptions> _memoryDumpOptions;
     private readonly ILogger<CoreHealthMonitorService> _logger;
     private readonly ServiceContext _context;
     private readonly ISystemClock _clock;
@@ -36,7 +37,7 @@ public sealed class CoreHealthMonitorService : IServiceImplementation
     public CoreHealthMonitorService(
         IInstanceHealthReporter<CoreHealthMonitorService> health,
         IOptions<DriveMonitorOptions> driveOptions,
-        IOptionsMonitor<MemoryDumpOptions> memoryDumpOptions,
+        IOptions<MemoryDumpOptions> memoryDumpOptions,
         ILogger<CoreHealthMonitorService> logger,
         ServiceContext context,
         ISystemClock clock)
@@ -52,7 +53,14 @@ public sealed class CoreHealthMonitorService : IServiceImplementation
 
     private BlobContainerClient CreateBlobClient()
     {
-        return new BlobContainerClient(new Uri(_memoryDumpOptions.CurrentValue.ContainerUri));
+        if (string.IsNullOrEmpty(_memoryDumpOptions.Value.ContainerUri))
+        {
+            throw new ArgumentException("Memory dump container URI is not configured");
+        }
+
+        return new BlobContainerClient(
+            new Uri(_memoryDumpOptions.Value.ContainerUri),
+            new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = _memoryDumpOptions.Value.ManagedIdentityId }));
     }
 
     public async Task<TimeSpan> RunAsync(CancellationToken cancellationToken)
@@ -121,12 +129,8 @@ public sealed class CoreHealthMonitorService : IServiceImplementation
             null
         ) as string;
 
-        string containerUri = _memoryDumpOptions.CurrentValue.ContainerUri;
-        if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(containerUri))
-        {
-            _logger.LogWarning("Memory dump monitoring settings not specified, skipping");
-        }
-        else if (!Directory.Exists(folder))
+
+        if (!Directory.Exists(folder))
         {
             _logger.LogError("Memory dump directory '{folder}' does not exist", folder);
         }
@@ -172,7 +176,7 @@ public sealed class CoreHealthMonitorService : IServiceImplementation
 
     private bool IsIgnoredFile(string fileName)
     {
-        string[] patterns = _memoryDumpOptions.CurrentValue.IgnoreDumpPatterns;
+        string[] patterns = _memoryDumpOptions.Value.IgnoreDumpPatterns;
         if (patterns == null)
         {
             return false;
