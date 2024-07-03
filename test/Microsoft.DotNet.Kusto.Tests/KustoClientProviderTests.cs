@@ -295,4 +295,6 @@ public class MockProgressiveDataSetTableCompletionFrame : ProgressiveDataSetTabl
     public long RowCount => throw new NotImplementedException();
 
     public FrameType FrameType => FrameType.TableCompletion;
+
+    public Exception Exception => throw new NotImplementedException();
 }
