@@ -33,13 +33,13 @@ public class LocalDevTokenCredential : TokenCredential
     }
 
     private static string CacheDirectory { get; } =
-        Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DncEngConfiguration", ".auth-cache");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "DncEngConfiguration", ".auth-cache");
 
-    private static string CacheLockPath => Path.Join(CacheDirectory, ".cache.lock");
+    private static string CacheLockPath => Path.Combine(CacheDirectory, ".cache.lock");
 
-    private static string CacheFilePath => Path.Join(CacheDirectory, "token.cache");
+    private static string CacheFilePath => Path.Combine(CacheDirectory, "token.cache");
 
-    private static string DeviceCodeLockPath => Path.Join(CacheDirectory, ".auth.lock");
+    private static string DeviceCodeLockPath => Path.Combine(CacheDirectory, ".auth.lock");
 
     private static DateTimeOffset _lastReadTime;
 
@@ -53,7 +53,7 @@ public class LocalDevTokenCredential : TokenCredential
 
                 using (await SentinelFileLock.AcquireAsync(CacheLockPath, 100, TimeSpan.FromMilliseconds(600)))
                 {
-                    var protectedBytes = await File.ReadAllBytesAsync(CacheFilePath);
+                    var protectedBytes = File.ReadAllBytes(CacheFilePath);
                     var bytes = ProtectedData.Unprotect(protectedBytes, null, DataProtectionScope.LocalMachine);
                     _lastReadTime = ts;
                     arg.TokenCache.DeserializeMsalV3(bytes, false);
@@ -94,14 +94,14 @@ public class LocalDevTokenCredential : TokenCredential
 
                 using (FileStream stream = info.OpenWrite())
                 {
-                    stream.Write(protectedBytes);
+                    stream.Write(protectedBytes, 0, protectedBytes.Length);
                 }
             }
             else
             {
                 using (var stream = info.OpenWrite())
                 {
-                    stream.Write(protectedBytes);
+                    stream.Write(protectedBytes, 0, protectedBytes.Length);
                 }
             }
         }
