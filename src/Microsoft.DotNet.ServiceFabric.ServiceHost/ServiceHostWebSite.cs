@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.ServiceFabric.ServiceHost;
 
 public class ServiceHostWebSiteOptions
 {
-    public IReadOnlyCollection<string> Urls { get; set; } = ["http://localhost:8080/"];
+    public IReadOnlyCollection<string> Urls { get; set; } = new[] { "http://localhost:8080/" };
 
     public bool CaptureStartupErrors { get; set; } = true;
 }
