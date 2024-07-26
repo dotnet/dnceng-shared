@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.DncEng.Configuration.Extensions;
@@ -10,6 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.ServiceFabric.ServiceHost;
 
+public class ServiceHostWebSiteOptions
+{
+    public IReadOnlyCollection<string> Urls { get; set; } = ["http://localhost:8080/"];
+
+    public bool CaptureStartupErrors { get; set; } = true;
+}
+
 public static class ServiceHostWebSite<TStartup>
     where TStartup : class
 {
@@ -17,26 +25,26 @@ public static class ServiceHostWebSite<TStartup>
     ///     This is the entry point of the service host process.
     /// </summary>
     [PublicAPI]
-    public static void Run(string serviceTypeName)
+    public static void Run(string serviceTypeName, ServiceHostWebSiteOptions options = null)
     {
+        options ??= new();
+
         if (ServiceFabricHelpers.RunningInServiceFabric())
         {
             ServiceFabricMain(serviceTypeName);
         }
         else
         {
-            NonServiceFabricMain();
+            NonServiceFabricMain(options);
         }
     }
 
-    private static void NonServiceFabricMain()
+    private static void NonServiceFabricMain(ServiceHostWebSiteOptions options)
     {
-        new WebHostBuilder().UseKestrel(o =>
-                {
-                    // Default 32k, which isn't enough for oauth cookies from GitHub for people with many teams/claims
-                    o.Limits.MaxRequestHeadersTotalSize = 65536;
-                }
-            )
+        new WebHostBuilder()
+            .UseKestrel(o =>
+                // Default 32k, which isn't enough for oauth cookies from GitHub for people with many teams/claims
+                o.Limits.MaxRequestHeadersTotalSize = 65536)
             .UseContentRoot(AppContext.BaseDirectory)
             .ConfigureAppConfiguration((context, builder) =>
             {
@@ -54,7 +62,7 @@ public static class ServiceHostWebSite<TStartup>
                     builder.AddConsole();
                 })
             .UseStartup<TStartup>()
-            .UseUrls("http://localhost:8080/")
+            .UseUrls(string.Join(";", options.Urls))
             .CaptureStartupErrors(true)
             .Build()
             .Run();
@@ -62,7 +70,8 @@ public static class ServiceHostWebSite<TStartup>
 
     private static void ServiceFabricMain(string serviceTypeName)
     {
-        ServiceHost.Run(host => host.RegisterStatelessWebService<TStartup>(serviceTypeName,
+        ServiceHost.Run(
+            host => host.RegisterStatelessWebService<TStartup>(serviceTypeName,
             hostBuilder =>
             {
                 hostBuilder.ConfigureAppConfiguration((context, builder) =>
