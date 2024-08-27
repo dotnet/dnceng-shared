@@ -143,7 +143,7 @@ public class DependencyInjectionTestValidation
         message.Should().Contain(nameof(NeedsSimple));
     }
 
-    // Testing the the library actually checks Keyed registrations
+    // Testing that the library actually checks keyed registrations
     [Test]
     public void KeyedMissingSome_Fail()
     {
