@@ -142,4 +142,15 @@ public class DependencyInjectionTestValidation
         isCoherent.Should().BeFalse();
         message.Should().Contain(nameof(NeedsSimple));
     }
+
+    // Testing that the library actually checks keyed registrations
+    [Test]
+    public void KeyedMissingSome_Fail()
+    {
+        bool isCoherent = DependencyInjectionValidation.IsDependencyResolutionCoherent(
+            s => { s.AddKeyedSingleton<NeedsSome>("test"); },
+            out string message);
+        isCoherent.Should().BeFalse(message);
+        message.Should().Contain(nameof(NeedsSome));
+    }
 }
