@@ -29,6 +29,16 @@ extends:
       name: NetCore1ESPool-Internal
       image: 1es-windows-2019
       os: windows
+    sdl:
+      tsa:
+        enabled: true
+      policheck:
+        enabled: true
+      binskim:
+        enabled: true
+        scanOutputDirectoryOnly: true
+      credscan:
+        enabled: true 
     stages:
     - stage: build
       dependsOn: []
