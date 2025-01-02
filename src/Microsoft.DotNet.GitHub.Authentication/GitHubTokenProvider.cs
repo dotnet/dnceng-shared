@@ -84,9 +84,8 @@ public class GitHubTokenProvider : IGitHubTokenProvider
 
         AccessToken token = _tokenCache[installationId];
 
-        // If the cached token will expire in less than 30 minutes we won't use it and let GetTokenForInstallationAsync generate a new one
         // and update the cache
-        if (token.ExpiresAt.Subtract(DateTimeOffset.Now).TotalMinutes < 30)
+        if (token.ExpiresAt.Subtract(DateTimeOffset.UtcNow).TotalMinutes < 15)
         {
             return false;
         }
