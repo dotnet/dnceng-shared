@@ -130,7 +130,12 @@ public class MockHttpClientFactory : IHttpClientFactory
     {
         AddCannedResponse(uri, content, code, contentType, method, EmptyHeaders);
     }
-        
+
+    public void AddCannedResponse(string uri, string content, HttpStatusCode code, HttpMethod method)
+    {
+        AddCannedResponse(uri, content, code, "application/json", method, EmptyHeaders);
+    }
+
     public void AddCannedResponse(string uri, string content, HttpStatusCode code, string contentType)
     {
         AddCannedResponse(uri, content, code, contentType, HttpMethod.Get);
