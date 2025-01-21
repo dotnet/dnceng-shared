@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <SignAssembly>false</SignAssembly>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions\Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.AkaMsManager\Microsoft.DotNet.Internal.AkaMsManager.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.Testing.Utility\Microsoft.DotNet.Internal.Testing.Utility.csproj" />
+  </ItemGroup>
+
+</Project>
