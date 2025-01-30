@@ -48,14 +48,29 @@ public class GitHubTokenProvider : IGitHubTokenProvider
             async () =>
             {
                 string jwt = _tokens.GetAppToken();
-                var appClient = new Octokit.GitHubClient(_gitHubClientOptions.Value.ProductHeader) { Credentials = new Credentials(jwt, AuthenticationType.Bearer) };
+                var appClient = new GitHubClient(_gitHubClientOptions.Value.ProductHeader)
+                {
+                    Credentials = new Credentials(jwt, AuthenticationType.Bearer)
+                };
+
                 AccessToken token = await appClient.GitHubApps.CreateInstallationToken(installationId);
-                _logger.LogInformation("New token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.", installationId, token.ExpiresAt);
+
+                _logger.LogInformation("New token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt} UTC.",
+                    installationId,
+                    token.ExpiresAt.UtcDateTime);
                 UpdateTokenCache(installationId, token);
                 return token.Token;
             },
             ex => _logger.LogError(ex, "Failed to get a github token for installation id {installationId}, retrying", installationId),
             ex => ex is ApiException exception && exception.StatusCode == HttpStatusCode.InternalServerError);
+    }
+
+    public void InvalidateTokenCacheAsync(long installationId)
+    {
+        if (_tokenCache.TryRemove(installationId, out AccessToken _))
+        {
+            _logger.LogInformation("Token cache invalidated for GitHub installation {installationId}.", installationId);
+        }
     }
 
     public string GetTokenForApp()
@@ -84,8 +99,9 @@ public class GitHubTokenProvider : IGitHubTokenProvider
 
         AccessToken token = _tokenCache[installationId];
 
-        // and update the cache
-        if (token.ExpiresAt.Subtract(DateTimeOffset.UtcNow).TotalMinutes < 15)
+        // If the cached token will expire in less than 30 minutes we won't use it,
+        // Instead GetTokenForInstallationAsync will generate a new one and update the cache
+        if (token.ExpiresAt.UtcDateTime.Subtract(DateTime.Now).TotalMinutes < 15)
         {
             return false;
         }

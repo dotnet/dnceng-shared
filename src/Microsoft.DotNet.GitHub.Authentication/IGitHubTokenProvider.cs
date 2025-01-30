@@ -11,6 +11,7 @@ public interface IGitHubTokenProvider
     Task<string> GetTokenForRepository(string repositoryUrl);
     string GetTokenForApp();
     string GetTokenForApp(string name);
+    void InvalidateTokenCacheAsync(long installationId);
 }
 
 public static class GitHubTokenProviderExtensions
