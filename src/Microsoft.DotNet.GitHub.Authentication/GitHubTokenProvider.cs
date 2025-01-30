@@ -110,7 +110,7 @@ public class GitHubTokenProvider : IGitHubTokenProvider
             return false;
         }
 
-        // If the cached token will expire in less than 30 minutes we won't use it,
+        // If the cached token will expire in less than 15 minutes we won't use it,
         // Instead GetTokenForInstallationAsync will generate a new one and update the cache
         if (cachedToken.ExpiresAt.UtcDateTime.Subtract(DateTime.UtcNow).TotalMinutes < 15)
         {
