@@ -42,7 +42,9 @@ public class GitHubTokenProvider : IGitHubTokenProvider
     {
         if (TryGetCachedToken(installationId, out AccessToken cachedToken))
         {
-            _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.", installationId, cachedToken.ExpiresAt);
+            _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.",
+                installationId,
+                cachedToken.ExpiresAt);
             return cachedToken.Token;
         }
 
@@ -53,7 +55,9 @@ public class GitHubTokenProvider : IGitHubTokenProvider
             {
                 if (TryGetCachedToken(installationId, out cachedToken))
                 {
-                    _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.", installationId, cachedToken.ExpiresAt);
+                    _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.",
+                        installationId,
+                        cachedToken.ExpiresAt);
                     return cachedToken.Token;
                 }
 
