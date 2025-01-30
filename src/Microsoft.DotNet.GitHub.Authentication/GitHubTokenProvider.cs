@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Services.Utility;
 using Microsoft.Extensions.Logging;
@@ -18,8 +19,9 @@ public class GitHubTokenProvider : IGitHubTokenProvider
     private readonly IGitHubAppTokenProvider _tokens;
     private readonly IOptions<GitHubClientOptions> _gitHubClientOptions;
     private readonly ConcurrentDictionary<long, AccessToken> _tokenCache;
-    public readonly ILogger<GitHubTokenProvider> _logger;
+    private readonly ILogger<GitHubTokenProvider> _logger;
     private readonly ExponentialRetry _retry;
+    private readonly SemaphoreSlim _semaphore = new(1);
 
     public GitHubTokenProvider(
         IInstallationLookup installationLookup,
@@ -40,22 +42,54 @@ public class GitHubTokenProvider : IGitHubTokenProvider
     {
         if (TryGetCachedToken(installationId, out AccessToken cachedToken))
         {
-            _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.", installationId, cachedToken.ExpiresAt);
+            _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.",
+                installationId,
+                cachedToken.ExpiresAt);
             return cachedToken.Token;
         }
 
-        return await _retry.RetryAsync(
-            async () =>
+        await _semaphore.WaitAsync();
+        try
+        {
+            return await _retry.RetryAsync(async () =>
             {
+                if (TryGetCachedToken(installationId, out cachedToken))
+                {
+                    _logger.LogInformation("Cached token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.",
+                        installationId,
+                        cachedToken.ExpiresAt);
+                    return cachedToken.Token;
+                }
+
                 string jwt = _tokens.GetAppToken();
-                var appClient = new Octokit.GitHubClient(_gitHubClientOptions.Value.ProductHeader) { Credentials = new Credentials(jwt, AuthenticationType.Bearer) };
+                var appClient = new GitHubClient(_gitHubClientOptions.Value.ProductHeader)
+                {
+                    Credentials = new Credentials(jwt, AuthenticationType.Bearer)
+                };
+
                 AccessToken token = await appClient.GitHubApps.CreateInstallationToken(installationId);
-                _logger.LogInformation("New token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt}.", installationId, token.ExpiresAt);
+
+                _logger.LogInformation("New token obtained for GitHub installation {installationId}. Expires at {tokenExpiresAt} UTC.",
+                    installationId,
+                    token.ExpiresAt.UtcDateTime);
                 UpdateTokenCache(installationId, token);
                 return token.Token;
             },
             ex => _logger.LogError(ex, "Failed to get a github token for installation id {installationId}, retrying", installationId),
             ex => ex is ApiException exception && exception.StatusCode == HttpStatusCode.InternalServerError);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public void InvalidateTokenCacheAsync(long installationId)
+    {
+        if (_tokenCache.TryRemove(installationId, out AccessToken _))
+        {
+            _logger.LogInformation("Token cache invalidated for GitHub installation {installationId}.", installationId);
+        }
     }
 
     public string GetTokenForApp()
@@ -75,22 +109,19 @@ public class GitHubTokenProvider : IGitHubTokenProvider
 
     private bool TryGetCachedToken(long installationId, out AccessToken cachedToken)
     {
-        cachedToken = null;
-
-        if (!_tokenCache.ContainsKey(installationId))
+        if (!_tokenCache.TryGetValue(installationId, out cachedToken))
         {
             return false;
         }
 
-        AccessToken token = _tokenCache[installationId];
-
-        // and update the cache
-        if (token.ExpiresAt.Subtract(DateTimeOffset.UtcNow).TotalMinutes < 15)
+        // If the cached token will expire in less than 15 minutes we won't use it,
+        // Instead GetTokenForInstallationAsync will generate a new one and update the cache
+        if (cachedToken.ExpiresAt.UtcDateTime.Subtract(DateTime.UtcNow).TotalMinutes < 15)
         {
+            cachedToken = null;
             return false;
         }
 
-        cachedToken = token;
         return true;
     }
 
