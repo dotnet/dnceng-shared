@@ -5,7 +5,7 @@ using Microsoft.DotNet.Internal.Testing.Utility;
 using Azure.Core;
 using NUnit.Framework;
 
-namespace Microsoft.DotNet.Arcade.AkaMsLinks.Tests;
+namespace Microsoft.DotNet.Internal.AkaMsLinks.Tests;
 
 public class AkaMsLinksTests
 {

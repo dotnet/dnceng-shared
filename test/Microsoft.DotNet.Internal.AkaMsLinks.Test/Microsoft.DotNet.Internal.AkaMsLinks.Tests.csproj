@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions\Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.DotNet.Arcade.AkaMsLinks\Microsoft.DotNet.Arcade.AkaMsLinks.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.AkaMsLinks\Microsoft.DotNet.Internal.AkaMsLinks.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.Testing.Utility\Microsoft.DotNet.Internal.Testing.Utility.csproj" />
   </ItemGroup>
 

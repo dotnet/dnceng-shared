@@ -10,7 +10,7 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Services.Utility;
 
-namespace Microsoft.DotNet.Arcade.AkaMsLinks;
+namespace Microsoft.DotNet.Internal.AkaMsLinks;
 
 /// <summary>
 ///     A single aka.ms link.
@@ -115,7 +115,7 @@ public class AkaMsLinksManager: IAkaMsLinksManager
             await CreateOrUpdateLinkBatchAsync(linksToUpdate, linkOwners, linkCreatedOrUpdatedBy, linkGroupOwner, update: true);
         }
 
-        _log.LogInformation("Completed creating/updating {linkCount} aka.ms links.", links.);
+        _log.LogInformation("Completed creating/updating {linkCount} aka.ms links.", links.Count);
     }
 
     /// <summary>
