@@ -37,7 +37,7 @@ public record AkaMsLink
 public interface IAkaMsLinksManager
 {
     public Task CreateOrUpdateLinksAsync(
-        IEnumerable<AkaMsLink> links,
+        IReadOnlyCollection<AkaMsLink> links,
         string linkOwners,
         string linkCreatedOrUpdatedBy,
         string linkGroupOwner);
@@ -97,12 +97,12 @@ public class AkaMsLinksManager: IAkaMsLinksManager
     /// <param name="linkOwners">Semicolon delimited list of link owners.</param>
     /// <returns>Async task</returns>
     public async Task CreateOrUpdateLinksAsync(
-        IEnumerable<AkaMsLink> links,
+        IReadOnlyCollection<AkaMsLink> links,
         string linkOwners,
         string linkCreatedOrUpdatedBy,
         string linkGroupOwner)
     {
-        _log.LogInformation("Creating/Updating {linkCount} aka.ms links.", links.Count());
+        _log.LogInformation("Creating/Updating {linkCount} aka.ms links.", links.Count);
 
         (IEnumerable<AkaMsLink> linksToCreate, IEnumerable<AkaMsLink> linksToUpdate) = await BucketLinksAsync(links);
 
@@ -115,7 +115,7 @@ public class AkaMsLinksManager: IAkaMsLinksManager
             await CreateOrUpdateLinkBatchAsync(linksToUpdate, linkOwners, linkCreatedOrUpdatedBy, linkGroupOwner, update: true);
         }
 
-        _log.LogInformation("Completed creating/updating {linkCount} aka.ms links.", links.Count());
+        _log.LogInformation("Completed creating/updating {linkCount} aka.ms links.", links.);
     }
 
     /// <summary>
