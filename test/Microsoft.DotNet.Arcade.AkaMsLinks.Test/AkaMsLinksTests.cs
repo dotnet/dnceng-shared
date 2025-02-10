@@ -5,16 +5,16 @@ using Microsoft.DotNet.Internal.Testing.Utility;
 using Azure.Core;
 using NUnit.Framework;
 
-namespace Microsoft.DotNet.Internal.AkaMsManager.Test;
+namespace Microsoft.DotNet.Arcade.AkaMsLinks.Tests;
 
-public class AkaMsLinksManagerTests
+public class AkaMsLinksTests
 {
     private const string _linkOwners = "linkOwner1;linkOwner2";
     private const string _createdBy = "linkOwner1";
     private const string _groupOwner = "linkGroupOwner";
 
-    private static readonly MockHttpClientFactory _clientFactory = new MockHttpClientFactory();
-    private static readonly AkaMsLinksManager _manager = new AkaMsLinksManager(
+    private static readonly MockHttpClientFactory _clientFactory = new();
+    private static readonly AkaMsLinksManager _manager = new(
         new TestTokenCredential("test-token"), new NUnitLogger(), _clientFactory);
 
     private static readonly AkaMsLink _validLink = new()

@@ -10,7 +10,7 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Services.Utility;
 
-namespace Microsoft.DotNet.Internal.AkaMsManager;
+namespace Microsoft.DotNet.Arcade.AkaMsLinks;
 
 /// <summary>
 ///     A single aka.ms link.

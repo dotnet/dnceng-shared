@@ -3,4 +3,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.DotNet.Internal.AkaMsManager.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.DotNet.Arcade.AkaMsLinks.Tests")]
