@@ -37,7 +37,7 @@ public record AkaMsLink
 public interface IAkaMsLinksManager
 {
     public Task CreateOrUpdateLinksAsync(
-        IReadOnlyCollection<AkaMsLink> links,
+        IEnumerable<AkaMsLink> links,
         string linkOwners,
         string linkCreatedOrUpdatedBy,
         string linkGroupOwner);
@@ -97,14 +97,14 @@ public class AkaMsLinksManager: IAkaMsLinksManager
     /// <param name="linkOwners">Semicolon delimited list of link owners.</param>
     /// <returns>Async task</returns>
     public async Task CreateOrUpdateLinksAsync(
-        IReadOnlyCollection<AkaMsLink> links,
+        IEnumerable<AkaMsLink> links,
         string linkOwners,
         string linkCreatedOrUpdatedBy,
         string linkGroupOwner)
     {
-        _log.LogInformation("Creating/Updating {linkCount} aka.ms links.", links.Count);
+        _log.LogInformation("Creating/Updating {linkCount} aka.ms links.", links.Count());
 
-        (IEnumerable<AkaMsLink> linksToCreate, IEnumerable<AkaMsLink> linksToUpdate) = await BucketLinksAsync(links);
+        (IReadOnlyCollection<AkaMsLink> linksToCreate, IReadOnlyCollection<AkaMsLink> linksToUpdate) = await BucketLinksAsync(links);
 
         if (linksToCreate.Any())
         {
@@ -115,7 +115,7 @@ public class AkaMsLinksManager: IAkaMsLinksManager
             await CreateOrUpdateLinkBatchAsync(linksToUpdate, linkOwners, linkCreatedOrUpdatedBy, linkGroupOwner, update: true);
         }
 
-        _log.LogInformation("Completed creating/updating {linkCount} aka.ms links.", links.Count);
+        _log.LogInformation("Completed creating/updating {linkCount} aka.ms links.", links.Count());
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ public class AkaMsLinksManager: IAkaMsLinksManager
     /// </summary>
     /// <param name="links">Links to bucket.</param>
     /// <returns>Tuple of links to create and links to update.</returns>
-    private async Task<(IEnumerable<AkaMsLink> linksToCreate, IEnumerable<AkaMsLink> linksToUpdate)> BucketLinksAsync(
+    private async Task<(IReadOnlyCollection<AkaMsLink> linksToCreate, IReadOnlyCollection<AkaMsLink> linksToUpdate)> BucketLinksAsync(
         IEnumerable<AkaMsLink> links)
     {
         var linksToCreate = new ConcurrentBag<AkaMsLink>();
@@ -178,7 +178,7 @@ public class AkaMsLinksManager: IAkaMsLinksManager
     /// <param name="linkOwners">Semicolon delimited list of link owners.</param>
     /// <param name="update">If true, existing links will be overwritten.</param>
     /// <returns>Async task</returns>
-    private async Task CreateOrUpdateLinkBatchAsync(IEnumerable<AkaMsLink> links, string linkOwners,
+    private async Task CreateOrUpdateLinkBatchAsync(IReadOnlyCollection<AkaMsLink> links, string linkOwners,
         string linkCreatedOrUpdatedBy, string linkGroupOwner, bool update)
     {
         // Batch these up by the max batch size
