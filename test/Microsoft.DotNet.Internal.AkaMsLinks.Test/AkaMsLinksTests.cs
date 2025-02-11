@@ -30,11 +30,7 @@ public class AkaMsLinksTests
         _clientFactory.AddCannedResponse($"{AkaMsLinksManager.ApiTargetUrl}/{_validLink.ShortUrl}", "", System.Net.HttpStatusCode.NotFound);
 
         var requestBody = AkaMsLinksManager.GetCreateOrUpdateLinkJson(_linkOwners, _createdBy, _groupOwner, false, [_validLink]);
-        _clientFactory.AddCannedResponse(
-            $"{AkaMsLinksManager.ApiTargetUrl}/bulk",
-            requestBody,
-            System.Net.HttpStatusCode.OK,
-            HttpMethod.Post);
+        AddBulkResponse(requestBody);
 
         await _manager.CreateOrUpdateLinksAsync([_validLink], _linkOwners, _createdBy, _groupOwner);
 
@@ -47,11 +43,7 @@ public class AkaMsLinksTests
         _clientFactory.AddCannedResponse($"{AkaMsLinksManager.ApiTargetUrl}/{_validLink.ShortUrl}", "");
 
         var requestBody = AkaMsLinksManager.GetCreateOrUpdateLinkJson(_linkOwners, _createdBy, _groupOwner, true, [_validLink]);
-        _clientFactory.AddCannedResponse(
-            $"{AkaMsLinksManager.ApiTargetUrl}/bulk",
-            requestBody,
-            System.Net.HttpStatusCode.OK,
-            HttpMethod.Put);
+        AddBulkResponse(requestBody, method: HttpMethod.Put);
 
         await _manager.CreateOrUpdateLinksAsync([_validLink], _linkOwners, _createdBy, _groupOwner);
 
@@ -79,11 +71,7 @@ public class AkaMsLinksTests
         }
 
         var createRequestBody = AkaMsLinksManager.GetCreateOrUpdateLinkJson(_linkOwners, _createdBy, _groupOwner, false, linksToCreate);
-        _clientFactory.AddCannedResponse(
-            $"{AkaMsLinksManager.ApiTargetUrl}/bulk",
-            createRequestBody,
-            System.Net.HttpStatusCode.OK,
-            HttpMethod.Post);
+        AddBulkResponse(createRequestBody);
 
         List<AkaMsLink> linksToUpdate = links[2..];
         foreach (var link in linksToUpdate)
@@ -92,15 +80,59 @@ public class AkaMsLinksTests
         }
 
         var updateRequestBody = AkaMsLinksManager.GetCreateOrUpdateLinkJson(_linkOwners, _createdBy, _groupOwner, true, linksToUpdate);
-        _clientFactory.AddCannedResponse(
-            $"{AkaMsLinksManager.ApiTargetUrl}/bulk",
-            updateRequestBody,
-            System.Net.HttpStatusCode.OK,
-            HttpMethod.Put);
+        AddBulkResponse(updateRequestBody, method: HttpMethod.Put);
 
         await _manager.CreateOrUpdateLinksAsync(links, _linkOwners, _createdBy, _groupOwner);
 
         _clientFactory.VerifyAll();
+    }
+
+    [Test]
+    public async Task LinkRetriedTest()
+    {
+        _clientFactory.AddCannedResponse($"{AkaMsLinksManager.ApiTargetUrl}/{_validLink.ShortUrl}", "", System.Net.HttpStatusCode.RequestTimeout);
+        _clientFactory.AddCannedResponse($"{AkaMsLinksManager.ApiTargetUrl}/{_validLink.ShortUrl}", "", System.Net.HttpStatusCode.NotFound);
+
+        var requestBody = AkaMsLinksManager.GetCreateOrUpdateLinkJson(_linkOwners, _createdBy, _groupOwner, false, [_validLink]);
+        AddBulkResponse(requestBody, System.Net.HttpStatusCode.RequestTimeout);
+        AddBulkResponse(requestBody);
+
+        await _manager.CreateOrUpdateLinksAsync([_validLink], _linkOwners, _createdBy, _groupOwner);
+
+        _clientFactory.VerifyAll();
+    }
+
+    [Test]
+    public void LinkFetrchRetryFailedTest()
+    {
+        _clientFactory.AddCannedResponse($"{AkaMsLinksManager.ApiTargetUrl}/{_validLink.ShortUrl}", "", System.Net.HttpStatusCode.Unauthorized);
+
+        Assert.ThrowsAsync<HttpRequestException>(
+            async () => await _manager.CreateOrUpdateLinksAsync([_validLink], _linkOwners, _createdBy, _groupOwner));
+    }
+
+    [Test]
+    public void LinkCreateRetryFailedTest()
+    {
+        _clientFactory.AddCannedResponse($"{AkaMsLinksManager.ApiTargetUrl}/{_validLink.ShortUrl}", "", System.Net.HttpStatusCode.NotFound);
+
+        var requestBody = AkaMsLinksManager.GetCreateOrUpdateLinkJson(_linkOwners, _createdBy, _groupOwner, false, [_validLink]);
+        AddBulkResponse(requestBody, System.Net.HttpStatusCode.Unauthorized);
+
+        Assert.ThrowsAsync<HttpRequestException>(
+            async () => await _manager.CreateOrUpdateLinksAsync([_validLink], _linkOwners, _createdBy, _groupOwner));
+    }
+
+    private static void AddBulkResponse(
+        string requestBody,
+        System.Net.HttpStatusCode? statusCode = null,
+        HttpMethod? method = null)
+    {
+        _clientFactory.AddCannedResponse(
+            $"{AkaMsLinksManager.ApiTargetUrl}/bulk",
+            requestBody,
+            statusCode ?? System.Net.HttpStatusCode.OK,
+            method ?? HttpMethod.Post);
     }
 }
 
