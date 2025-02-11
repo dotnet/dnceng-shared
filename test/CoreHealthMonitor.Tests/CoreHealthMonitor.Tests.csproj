@@ -3,6 +3,8 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+    <!-- Using RuntimeIdentifier with .NET 7.0 or greater requires us to explicitly set this prop -->
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
