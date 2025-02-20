@@ -70,7 +70,7 @@ public class AkaMsLinksManager: IAkaMsLinksManager
     private IHttpClientFactory _clientFactory;
     private ILogger _log;
 
-    public AkaMsLinksManager(TokenCredential credential, ILogger logger, IHttpClientFactory clientFactory)
+    public AkaMsLinksManager(TokenCredential credential, ILogger<AkaMsLinksManager> logger, IHttpClientFactory clientFactory)
     {
         _retryHandler = ExponentialRetry.Default;
         _credential = credential;
