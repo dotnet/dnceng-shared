@@ -78,6 +78,14 @@ public class AkaMsLinksManager: IAkaMsLinksManager
         _clientFactory = clientFactory;
     }
 
+    internal AkaMsLinksManager(TokenCredential credential, ILogger logger, IHttpClientFactory clientFactory)
+    {
+        _retryHandler = ExponentialRetry.Default;
+        _credential = credential;
+        _log = logger;
+        _clientFactory = clientFactory;
+    }
+
     private async Task<HttpClient> CreateClient()
     {
         var token = await _credential.GetTokenAsync(new TokenRequestContext([$"{Endpoint}/.default"]), default);
