@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Microsoft.DotNet.Web.Authentication.Tests.Controllers;
 
 [Route("test-auth/anonymous")]
-[AllowAnonymous]
 public class AnonymousAttributeController : ControllerBase
 {
+    [AllowAnonymous]
     [Route("no")]
     public IActionResult NoAttribute()
     {
