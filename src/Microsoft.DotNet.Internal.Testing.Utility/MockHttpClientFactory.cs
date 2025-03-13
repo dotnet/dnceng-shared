@@ -153,7 +153,7 @@ public class MockHttpClientFactory : IHttpClientFactory
 
     public HttpClient CreateClient(string name)
     {
-        return new HttpClient(new Handler(_cannedResponses, _unexpectedRequests)); // lgtm [cs/httpclient-checkcertrevlist-disabled] Used in unit testing
+        return new HttpClient(new Handler(_cannedResponses, _unexpectedRequests)); // CodeQL [SM02185] Mock HttpClient used in unit testing
     }
 
     public void VerifyAll()

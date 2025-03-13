@@ -393,7 +393,7 @@ public class TestHasher : IPasswordHasher<TestUser>
 
     public static string CalculateHash(TestUser user, string password)
     {
-        return $":HASH:{user.Name}:{password}"; // lgtm [cs/hardcoded-credentials] Part of unit tests
+        return $":HASH:{user.Name}:{password}"; // CodeQL [SM00423] Hardcoded as part of unit tests
     }
 
     public PasswordVerificationResult VerifyHashedPassword(
