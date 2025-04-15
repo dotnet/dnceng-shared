@@ -7,12 +7,9 @@ using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.Core;
 using Microsoft.SymbolStore;
 using Polly;
 using Polly.Retry;

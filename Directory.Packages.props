@@ -11,6 +11,7 @@
     <!-- Note: These libraries can be loaded by Arcade SDK clients, which may already have a
          newer copy of this package loaded. When updating one, be aware of the other to prevent runtime issues
          See: https://github.com/dotnet/arcade/blob/main/eng/Versions.props -->
+    <PackageVersion Include="Azure.Core" Version="1.45.0" />
     <PackageVersion Include="Azure.Data.AppConfiguration" Version="1.0.0" />
     <PackageVersion Include="Azure.Data.Tables" Version="12.8.3" />
     <PackageVersion Include="Azure.Identity" Version="1.11.4" />
@@ -32,6 +33,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" />
+    <PackageVersion Include="Microsoft.DiaSymReader.Converter" Version="1.1.0-beta2-19575-01" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
@@ -56,6 +58,7 @@
     <PackageVersion Include="Microsoft.ServiceFabric.AspNetCore.HttpSys" Version="5.2.1571" />
     <PackageVersion Include="Microsoft.ServiceFabric.Data" Version="5.2.1571" />
     <PackageVersion Include="Microsoft.ServiceFabric.Services" Version="5.2.1571" />
+    <PackageVersion Include="Microsoft.SymbolManifestGenerator" Version="8.0.0-preview.24461.2" />
     <PackageVersion Include="Mono.Options" Version="5.3.0.1" />
     <PackageVersion Include="Moq" Version="4.8.3" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
@@ -63,6 +66,7 @@
     <PackageVersion Include="NUnit" Version="3.13.3" />
     <PackageVersion Include="NUnit3TestAdapter" Version="3.16.1" />
     <PackageVersion Include="Octokit" Version="13.0.1" />
+    <PackageVersion Include="Polly.Core" Version="8.4.1" />
     <PackageVersion Include="Quartz" Version="3.6.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="5.2.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="5.2.1" />

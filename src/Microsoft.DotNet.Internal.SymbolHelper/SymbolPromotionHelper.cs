@@ -17,7 +17,6 @@ using Polly;
 using System.Text.Json;
 using System.IO;
 using System.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Internal.SymbolHelper;
 
