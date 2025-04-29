@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -21,8 +22,7 @@ public class GitHubAuthenticationHandler : OAuthHandler<GitHubAuthenticationOpti
         GitHubClaimResolver claimResolver,
         IOptionsMonitor<GitHubAuthenticationOptions> options,
         ILoggerFactory logger,
-        UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        UrlEncoder encoder) : base(options, logger, encoder)
     {
         _claimResolver = claimResolver;
     }

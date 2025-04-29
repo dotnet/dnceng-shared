@@ -36,13 +36,6 @@ public class TestThrowableException : Exception
         : base(message, inner)
     {
     }
-
-    protected TestThrowableException(
-        SerializationInfo info,
-        StreamingContext context)
-        : base(info, context)
-    {
-    }
 }
 
 public partial class DelegatedServiceTest

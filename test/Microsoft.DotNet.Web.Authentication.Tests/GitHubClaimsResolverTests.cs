@@ -4,24 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.DotNet.GitHub.Authentication;
 using Microsoft.DotNet.Internal.Testing.Utility;
 using Microsoft.DotNet.Web.Authentication.GitHub;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Octokit;
-using Octokit.Internal;
 
 namespace Microsoft.DotNet.Web.Authentication.Tests;
 
@@ -407,8 +402,7 @@ public class GitHubClaimsResolverTests
         TestClock localClock = clock = new TestClock();
         var collection = new ServiceCollection();
 
-        collection.AddSingleton<ISystemClock>(clock);
-        collection.AddSingleton<AspNetCore.Authentication.ISystemClock>(clock);
+        collection.AddSingleton<TimeProvider>(clock);
         collection.AddMemoryCache(o => o.Clock = localClock);
         collection.AddLogging(l =>
         {

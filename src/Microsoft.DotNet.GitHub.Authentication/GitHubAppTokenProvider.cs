@@ -13,10 +13,10 @@ namespace Microsoft.DotNet.GitHub.Authentication;
 
 public class GitHubAppTokenProvider : IGitHubAppTokenProvider
 {
-    private readonly ISystemClock _clock;
+    private readonly TimeProvider _clock;
     private readonly IOptionsMonitor<GitHubTokenProviderOptions> _options;
 
-    public GitHubAppTokenProvider(ISystemClock clock, IOptionsMonitor<GitHubTokenProviderOptions> options = null)
+    public GitHubAppTokenProvider(TimeProvider clock, IOptionsMonitor<GitHubTokenProviderOptions> options = null)
     {
         _clock = clock;
         _options = options;
@@ -56,8 +56,8 @@ public class GitHubAppTokenProvider : IGitHubAppTokenProvider
         var signingCredentials = new SigningCredentials(rsaSecurityKey, SecurityAlgorithms.RsaSha256);
         var dsc = new SecurityTokenDescriptor
         {
-            IssuedAt = _clock.UtcNow.AddMinutes(-1).UtcDateTime,
-            Expires = _clock.UtcNow.AddMinutes(9).UtcDateTime,
+            IssuedAt = _clock.GetUtcNow().AddMinutes(-1).UtcDateTime,
+            Expires = _clock.GetUtcNow().AddMinutes(9).UtcDateTime,
             Issuer = gitHubAppId.ToString(),
             SigningCredentials = signingCredentials
         };

@@ -311,7 +311,7 @@ public class PersonalAccessTokenAuthenticationTests
         factory = new TestAppFactory<EmptyTestStartup>();
         factory.ConfigureServices(services =>
         {
-            services.AddSingleton<ISystemClock>(localClock);
+            services.AddSingleton<TimeProvider>(localClock);
             services.AddSingleton<IPasswordHasher<TestUser>, TestHasher>();
             services.AddControllers();
             services.AddAuthenticationCore(o =>
