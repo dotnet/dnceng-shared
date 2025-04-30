@@ -47,10 +47,10 @@ public interface IAkaMsLinksManager
 
 public class AkaMsLinksManager: IAkaMsLinksManager
 {
-    private const string TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
+    private const string TenantId = "ncd";
 
-    internal const string ApiBaseUrl = "https://redirectionapi.trafficmanager.net/api/aka"; // Base url for aka.ms API
-    internal const string Endpoint = "https://microsoft.onmicrosoft.com/redirectionapi"; // Token scope endpoint for aka.ms
+    internal const string ApiBaseUrl = "https://redirectionapi-ame.trafficmanager.net/api/aka"; // Base url for aka.ms API
+    internal const string Endpoint = "https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod"; // Token scope endpoint for aka.ms
 
     internal static string ApiTargetUrl => $"{ApiBaseUrl}/1/{TenantId}";
 
