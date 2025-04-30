@@ -25,7 +25,7 @@ public partial class GitHubAppTokenProviderTests
         {
             services.AddOptions();
             services.AddLogging(l => l.AddProvider(new NUnitLogger()));
-            services.AddSingleton<ISystemClock, TestClock>();
+            services.AddSingleton<TimeProvider, TestClock>();
         }
 
         public static Func<IServiceProvider,IGitHubAppTokenProvider> Provider(IServiceCollection service, string keyPem)

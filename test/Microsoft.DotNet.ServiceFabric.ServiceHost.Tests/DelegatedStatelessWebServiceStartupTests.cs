@@ -70,7 +70,7 @@ public class DelegatedStatelessWebServiceStartupTests
         {
             app.Use(async (ctx, next) =>
             {
-                ctx.Response.Headers.Add("TestHeader", "TestHeaderValue");
+                ctx.Response.Headers.Append("TestHeader", "TestHeaderValue");
                 await next();
             });
         }

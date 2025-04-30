@@ -12,7 +12,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Octokit;
-using Octokit.Internal;
 
 namespace Microsoft.DotNet.Web.Authentication.GitHub;
 

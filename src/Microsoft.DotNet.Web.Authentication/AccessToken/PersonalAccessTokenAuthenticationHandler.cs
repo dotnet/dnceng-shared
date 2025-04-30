@@ -41,9 +41,8 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
         IOptionsMonitor<PersonalAccessTokenAuthenticationOptions<TUser>> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock,
         IPasswordHasher<TUser> passwordHasher,
-        SignInManager<TUser> signInManager) : base(options, logger, encoder, clock)
+        SignInManager<TUser> signInManager) : base(options, logger, encoder)
     {
         PasswordHasher = passwordHasher;
         SignInManager = signInManager;
