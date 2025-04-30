@@ -170,7 +170,7 @@ public class DefaultAuthorizeActionModelConventionTests
                 });
                 services.AddAuthenticationCore(o => { o.DefaultScheme = "None"; });
                 services.AddSingleton<UrlEncoder, UrlTestEncoder>();
-                services.AddSingleton<ISystemClock, TestClock>();
+                services.AddSingleton<TimeProvider, TestClock>();
                 var b = new AuthenticationBuilder(services);
                 b.AddScheme<AutoAuthenticationTestSchemeOptions, AutoAuthenticationTestScheme>("None",
                     o =>
@@ -211,8 +211,7 @@ public class AutoAuthenticationTestScheme : AuthenticationHandler<AutoAuthentica
     public AutoAuthenticationTestScheme(
         IOptionsMonitor<AutoAuthenticationTestSchemeOptions> options,
         ILoggerFactory logger,
-        UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        UrlEncoder encoder) : base(options, logger, encoder)
     {
     }
 
