@@ -36,19 +36,6 @@ public class SymbolUploadHelperFactory
     /// <exception cref="FileNotFoundException">If the symbol tool is not found after download.</exception>
     public static async Task<SymbolUploadHelper> GetSymbolHelperWithDownloadAsync(ITracer logger, SymbolPublisherOptions options, string? installDirectory = null, string? workingDir = null, int retryCount = 3, CancellationToken token = default)
     {
-        ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(options);
-        ThrowIfHostUnsupported();
-
-        installDirectory ??= Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        if (Directory.Exists(installDirectory))
-        {
-            Directory.Delete(installDirectory, recursive: true);
-        }
-
-        _ = Directory.CreateDirectory(installDirectory);
-
         string localToolPath = await DownloadSymbolsToolAsync(logger, options.AzdoOrg, installDirectory, retryCount, token);
 
         return GetSymbolHelperFromLocalTool(logger, options, localToolPath, workingDir);
@@ -80,19 +67,29 @@ public class SymbolUploadHelperFactory
         return new SymbolUploadHelper(logger, expectedSymbolPath, options, workingDir);
     }
 
-    /// <exception cref="ArgumentNullException">If <paramref name="logger"/> or <paramref name="installDirectory"/> is null.</exception>
-    /// <exception cref="ArgumentException">If <paramref name="azdoOrg"/> is null or empty.</exception>
+    /// <summary>
+    /// Downloads the symbols client for the appropriate Azure DevOps organization.
+    /// </summary>
+    /// <param name="logger">An <see cref="ITracer"/> instance to log to and pass to the client.</param>
+    /// <param name="azdoOrg">The Azure DevOps organization the tool will publish to.</param>
+    /// <param name="installDirectory">Optional. The directory to install the symbol tool. This folder will get cleaned before download. If not supplied, a random temporary folder is used.</param>
+    /// <param name="retryCount">Optional. The number of times to retry the download for transient errors. Defaults to 3.</param>
+    /// <param name="token">Optional. The cancellation token to use during symbol download.</param>
+    /// <returns>A path to the Azure DevOps organization's symbol server version.</returns>
+    /// <exception cref="ArgumentNullException">If <paramref name="logger"/> or <paramref name="azdoOrg"/> is null.</exception>
     /// <exception cref="InvalidOperationException">If the host is not supported for symbol publishing.</exception>
+    /// <exception cref="InvalidOperationException">If the download response does not contain the expected URI.</exception>
     /// <exception cref="HttpRequestException">If the symbol client download fails after retries.</exception>
     /// <exception cref="FileNotFoundException">If the symbol tool is not found after download.</exception>
-    private static async Task<string> DownloadSymbolsToolAsync(
+    public static async Task<string> DownloadSymbolsToolAsync(
         ITracer logger, string azdoOrg,
-        string installDirectory, int retryCount = 3, CancellationToken token = default)
+        string? installDirectory = null, int retryCount = 3, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(installDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(azdoOrg);
         ThrowIfHostUnsupported();
+
+        installDirectory ??= GetTempDir();
 
         ResiliencePipeline<string> pipeline = new ResiliencePipelineBuilder<string>()
             .AddRetry(new RetryStrategyOptions<string>
@@ -144,7 +141,7 @@ public class SymbolUploadHelperFactory
 
             logger.Information($"Fetching symbol tool from {downloadUri}. Installing to {installDirectory}");
 
-            using HttpRequestMessage getToolRequest = new(HttpMethod.Get, downloadUri) { Headers = { Accept = { new ("application/zip") } } };
+            using HttpRequestMessage getToolRequest = new(HttpMethod.Get, downloadUri) { Headers = { Accept = { new("application/zip") } } };
 
             // Suppress the redirect to the login page
             getToolRequest.Headers.Add("X-TFS-FedAuthRedirect", "Suppress");
@@ -174,5 +171,19 @@ public class SymbolUploadHelperFactory
         {
             throw new InvalidOperationException("Symbol publishing currently relies on Windows x64 hosting");
         }
+    }
+
+    private static string GetTempDir()
+    {
+        string installDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        if (Directory.Exists(installDirectory))
+        {
+            Directory.Delete(installDirectory, recursive: true);
+        }
+
+        _ = Directory.CreateDirectory(installDirectory);
+
+        return installDirectory;
     }
 }

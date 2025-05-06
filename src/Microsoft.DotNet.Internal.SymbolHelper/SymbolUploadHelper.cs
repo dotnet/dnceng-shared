@@ -168,7 +168,26 @@ public sealed class SymbolUploadHelper
                 logger.Information("Cleaning up symbol conversion directory {0}", convertedFolder);
                 try { Directory.Delete(convertedFolder, recursive: true); } catch { }
             }
-        }    
+        }
+    }
+
+    /// <summary>
+    /// Adds a stream of a package to a symbol request. This respects conversion requests and manifest generation
+    /// if such options were specified at helper creation time.
+    /// </summary>
+    /// <param name="name">The name of the symbol request.</param>
+    /// <param name="packageName">The path to the package.</param>
+    /// <param name="packageStream">Package contents as stream.</param>
+    /// <returns>The result of the operation.</returns>
+    public async Task<int> AddPackageToRequest(string? name, string packageName, Stream packageStream)
+    {
+        ScopedTracer logger = _tracerFactory.CreateTracer(nameof(AddPackagesToRequest));
+        SymbolRequestHelpers.ValidateRequestName(name, logger);
+        using IDisposable scopeToken = logger.AddSubScope(packageName);
+
+        using var zipArchive = new ZipArchive(packageStream, ZipArchiveMode.Read);
+
+        return await AddPackageToRequestCore(name!, packageName, zipArchive, logger).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -263,17 +282,31 @@ public sealed class SymbolUploadHelper
 
     private async Task<int> AddPackageToRequestCore(string name, string packagePath, ScopedTracer logger)
     {
-        // Create a temporary directory to extract the package contents.
-        DirectoryInfo packageDirInfo = CreateTempDirectory();
-        string packageExtractDir = packageDirInfo.FullName;
         try
         {
             logger.WriteLine("Processing package");
             using ZipArchive archive = ZipFile.Open(packagePath, ZipArchiveMode.Read);
 
-            logger.Information("Extracting symbol package {0} to {1}", packagePath, packageExtractDir);
+            return await AddPackageToRequestCore(name, packagePath, archive, logger);
 
-            foreach (ZipArchiveEntry entry in archive.Entries)
+        }
+        catch (Exception ex)
+        {
+            logger.Error("Failed to process package {0}: {1}", packagePath, ex);
+            return -1;
+        }
+    }
+
+    private async Task<int> AddPackageToRequestCore(string name, string packageName, ZipArchive zipArchive, ScopedTracer logger)
+    {
+        // Create a temporary directory to extract the package contents.
+        DirectoryInfo packageDirInfo = CreateTempDirectory();
+        string packageExtractDir = packageDirInfo.FullName;
+        try
+        {
+            logger.Information("Extracting symbol package {0} to {1}", packageName, packageExtractDir);
+
+            foreach (ZipArchiveEntry entry in zipArchive.Entries)
             {
                 if (entry.FullName.EndsWith('/'))
                 {
@@ -312,18 +345,18 @@ public sealed class SymbolUploadHelper
                 logger.Verbose("Generated manifest in {0}", manifest);
             }
 
-            logger.WriteLine("Adding package {0} to request {1}", packagePath, name);
+            logger.WriteLine("Adding package {0} to request {1}", packageName, name);
             return await AddDirectoryCore(name, packageExtractDir, manifest, logger).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            logger.Error("Failed to process package {0}: {1}", packagePath, ex);
+            logger.Error("Failed to process package {0}: {1}", packageName, ex);
             return -1;
         }
         finally
         {
             logger.Information("Cleaning up temporary directory {0}", packageDirInfo.FullName);
-            try { packageDirInfo.Delete(recursive: true); } catch {}
+            try { packageDirInfo.Delete(recursive: true); } catch { }
         }
 
         bool ShouldIndexPackageFile(string relativeFilePath)
@@ -394,7 +427,7 @@ public sealed class SymbolUploadHelper
             logger.Verbose("Converted successfully to {0}.", convertedPdbPath);
         }
     }
-    
+
     private static string GetConvertedPdbFolder(string filesDir) => Path.Combine(filesDir, ConversionFolderName);
 
     private DirectoryInfo CreateTempDirectory()
