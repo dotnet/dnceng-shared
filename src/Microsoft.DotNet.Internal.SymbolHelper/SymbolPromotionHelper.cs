@@ -32,7 +32,7 @@ public static class SymbolPromotionHelper
     private static readonly HttpClient s_client = new();
 
     private static readonly JsonSerializerOptions s_options = new() { PropertyNameCaseInsensitive = true };
-    
+
     public static readonly ResiliencePropertyKey<ITracer> s_loggerKey = new("logger");
 
     private static readonly ResiliencePipeline s_retryPipeline = new ResiliencePipelineBuilder()
@@ -124,7 +124,7 @@ public static class SymbolPromotionHelper
             ["publishToInternalServer"] = (visibility >= Visibility.Internal),
             ["publishToPublicServer"] = (visibility >= Visibility.Public)
         };
-        
+
         logger.WriteLine("Requesting '{0}' to be visible in as follows: '{1}'", requestName, visibilityPayload);
         if (!await SendPostRequestWithRetries(requestSpecificEndpoint, visibilityPayload))
         {
@@ -158,7 +158,7 @@ public static class SymbolPromotionHelper
             catch (Exception ex)
             {
                 logger.Error("Request failed: {0}", ex);
-                if (ex is HttpRequestException httpEx &&  httpEx.StatusCode == HttpStatusCode.BadRequest)
+                if (ex is HttpRequestException httpEx && httpEx.StatusCode == HttpStatusCode.BadRequest)
                 {
                     logger.Warning("This request returned BadRequest. Make sure the request '{0}' exists in the temporary server and is finalized.", requestName);
                 }
@@ -205,7 +205,7 @@ public static class SymbolPromotionHelper
                     }
                 };
                 using HttpResponseMessage statusResponse = await s_client.SendAsync(statusRequest, ct);
-                
+
                 if (statusResponse.StatusCode == HttpStatusCode.NotFound)
                 {
                     logger.WriteLine("Request '{0}' hasn't been registered", requestName);
