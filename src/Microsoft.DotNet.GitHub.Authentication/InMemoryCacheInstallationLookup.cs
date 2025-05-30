@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -40,8 +41,8 @@ public class InMemoryCacheInstallationLookup : IInstallationLookup
     public async Task<long> GetInstallationId(string repositoryUrl)
     {
         string[] segments = new Uri(repositoryUrl, UriKind.Absolute).Segments;
-        string org = segments[segments.Length - 2].TrimEnd('/').ToLowerInvariant();
-
+        string org = segments[^2].TrimEnd('/').ToLowerInvariant();
+            
         return await GetInstallationIdForOrg(org);
     }
 
@@ -84,27 +85,22 @@ public class InMemoryCacheInstallationLookup : IInstallationLookup
             {
                 string installedOrg = i.Account.Login.ToLowerInvariant();
                 _log.LogInformation("Found installation token for {org}, with id {id}", installedOrg, i.Id);
-                if (!newCache.ContainsKey(installedOrg))
-                {
-                    newCache.Add(installedOrg, i.Id);
-                }
+                newCache.Add(installedOrg, i.Id);
             }
 
             foreach (string key in _cache.Keys)
             {
                 // Anything we had before but don't have now has been uninstalled, remove it
-                if (!newCache.ContainsKey(key))
+                if (newCache.TryAdd(key, 0))
                 {
-                    newCache.Add(key, 0);
                     _log.LogInformation("Removed uninstalled org {org}", key);
                 }
             }
 
             // If the current thing wasn't in this list, it's not installed, record that so when they ask again in
             // a few seconds, we don't have to re-query GitHub
-            if (!newCache.ContainsKey(org))
+            if (newCache.TryAdd(org, 0))
             {
-                newCache.Add(org, 0);
                 _log.LogInformation("Removed uninstalled, but requested org {org}", org);
             }
 
