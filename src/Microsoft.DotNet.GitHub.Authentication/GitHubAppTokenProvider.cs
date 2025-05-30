@@ -1,22 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
-using Microsoft.Extensions.Options;
-using System.Text;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.DotNet.GitHub.Authentication;
 
 public class GitHubAppTokenProvider : IGitHubAppTokenProvider
 {
-    private readonly TimeProvider _clock;
+    private readonly ISystemClock _clock;
     private readonly IOptionsMonitor<GitHubTokenProviderOptions> _options;
 
-    public GitHubAppTokenProvider(TimeProvider clock, IOptionsMonitor<GitHubTokenProviderOptions> options = null)
+    public GitHubAppTokenProvider(ISystemClock clock, IOptionsMonitor<GitHubTokenProviderOptions> options = null)
     {
         _clock = clock;
         _options = options;
@@ -56,8 +54,8 @@ public class GitHubAppTokenProvider : IGitHubAppTokenProvider
         var signingCredentials = new SigningCredentials(rsaSecurityKey, SecurityAlgorithms.RsaSha256);
         var dsc = new SecurityTokenDescriptor
         {
-            IssuedAt = _clock.GetUtcNow().AddMinutes(-1).UtcDateTime,
-            Expires = _clock.GetUtcNow().AddMinutes(9).UtcDateTime,
+            IssuedAt = _clock.UtcNow.AddMinutes(-1).UtcDateTime,
+            Expires = _clock.UtcNow.AddMinutes(9).UtcDateTime,
             Issuer = gitHubAppId.ToString(),
             SigningCredentials = signingCredentials
         };

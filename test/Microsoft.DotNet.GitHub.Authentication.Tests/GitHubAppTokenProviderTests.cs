@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions;
 using Microsoft.DotNet.Internal.Testing.Utility;
@@ -26,9 +24,10 @@ public partial class GitHubAppTokenProviderTests
             services.AddOptions();
             services.AddLogging(l => l.AddProvider(new NUnitLogger()));
             services.AddSingleton<TimeProvider, TestClock>();
+            services.AddSingleton<ISystemClock, TestClock>();
         }
 
-        public static Func<IServiceProvider,IGitHubAppTokenProvider> Provider(IServiceCollection service, string keyPem)
+        public static Func<IServiceProvider, IGitHubAppTokenProvider> Provider(IServiceCollection service, string keyPem)
         {
             service.Configure<GitHubTokenProviderOptions>(o =>
             {
@@ -54,10 +53,10 @@ public partial class GitHubAppTokenProviderTests
             .Build();
         IGitHubAppTokenProvider provider = testData.Provider;
         string token = provider.GetAppToken();
-        token.Should().Contain(".", because:"valid JWT are in the format XXX.YYY.ZZZ");
+        token.Should().Contain(".", because: "valid JWT are in the format XXX.YYY.ZZZ");
     }
 
-        
+
     // This, unfortunately, isn't something the framework can do for us, but luckily it's an easy thing to do ourselves
     private static string ExportToPem(RSA key)
     {
