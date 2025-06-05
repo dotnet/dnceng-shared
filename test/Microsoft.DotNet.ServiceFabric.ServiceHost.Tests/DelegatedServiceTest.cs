@@ -3,15 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Execution;
-using FluentAssertions.Specialized;
+using AwesomeAssertions;
+using AwesomeAssertions.Specialized;
 using Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions;
 using Microsoft.DotNet.Internal.Testing.Utility;
 using Microsoft.Extensions.DependencyInjection;
@@ -211,13 +208,8 @@ public static class NotCompleteGenericAsyncTaskAssertion
             where TTask : Task
             where TAssertions : AsyncFunctionAssertions<TTask, TAssertions>
     {
-        Execute.Assertion.ForCondition(parentConstraint.Subject != null)
-            .BecauseOf(because, becauseArgs)
-            .FailWith(
-                "Expected {context:task} to complete within {0}{reason}, but found <null>.",
-                new object[1]
-                    { timeSpan }
-            );
+        parentConstraint.Subject.Should().NotBeNull($"Expected task to complete within {timeSpan}{because}, but found <null>.");
+            
         using var timeoutCancellationTokenSource = new CancellationTokenSource();
         Task task = parentConstraint.Subject();
         Task completedTask = await Task.WhenAny(task, Task.Delay(timeSpan, timeoutCancellationTokenSource.Token)).ConfigureAwait(false);
@@ -226,10 +218,9 @@ public static class NotCompleteGenericAsyncTaskAssertion
             timeoutCancellationTokenSource.Cancel();
             await completedTask.ConfigureAwait(false);
         }
-        Execute.Assertion.ForCondition(completedTask != task).BecauseOf(because, becauseArgs).FailWith("Expected {context:task} not to complete within {0}{reason}.", new object[1]
-        {
-            timeSpan
-        });
+        
+        completedTask.Should().NotBe(task, $"Expected task not to complete within {timeSpan}{because}.");
+        
         var andConstraint = new AndConstraint<AsyncFunctionAssertions<TTask, TAssertions>>(parentConstraint as AsyncFunctionAssertions<TTask, TAssertions>);
         return andConstraint;
     }

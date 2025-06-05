@@ -49,7 +49,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
-    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="AwesomeAssertions" /><!-- This is actually FluentAssertions -->
     <PackageReference Include="Moq" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit3TestAdapter">

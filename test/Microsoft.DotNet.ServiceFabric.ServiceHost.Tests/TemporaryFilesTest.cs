@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 

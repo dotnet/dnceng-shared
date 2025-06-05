@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.DotNet.Internal.Testing.Utility;

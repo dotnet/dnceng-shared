@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Fabric;
 using System.Linq;
 using Castle.DynamicProxy;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
