@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions;
 using Microsoft.DotNet.Internal.Testing.Utility;
 using Microsoft.Extensions.DependencyInjection;

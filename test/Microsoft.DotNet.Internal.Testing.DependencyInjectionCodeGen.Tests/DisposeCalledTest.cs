@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.DotNet.Internal.Testing.DependencyInjection.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;

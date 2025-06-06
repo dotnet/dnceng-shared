@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Castle.DynamicProxy;
-using FluentAssertions;
+using AwesomeAssertions;
 using Moq;
 using NUnit.Framework;
 

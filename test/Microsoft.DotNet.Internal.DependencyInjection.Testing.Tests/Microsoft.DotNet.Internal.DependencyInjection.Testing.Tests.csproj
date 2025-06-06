@@ -3,7 +3,7 @@
     <IsPackable>false</IsPackable>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Internal.DependencyInjection.Testing\Microsoft.DotNet.Internal.DependencyInjection.Testing.csproj" />
   </ItemGroup>

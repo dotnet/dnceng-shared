@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.DotNet.Internal.DependencyInjection.Testing;
 using Microsoft.DotNet.ServiceFabric.ServiceHost;
 using NUnit.Framework;
