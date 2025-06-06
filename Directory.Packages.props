@@ -11,8 +11,8 @@
     <!-- Note: These libraries can be loaded by Arcade SDK clients, which may already have a
          newer copy of this package loaded. When updating one, be aware of the other to prevent runtime issues
          See: https://github.com/dotnet/arcade/blob/main/eng/Versions.props -->
-    <PackageVersion Include="AwesomeAssertions" Version="9.0.0" /><!-- This is actually FluentAssertions -->
-    <PackageVersion Include="AwesomeAssertions.Json" Version="9.0.0" /><!-- This is actually FluentAssertions -->
+    <PackageVersion Include="AwesomeAssertions" Version="9.0.0" />
+    <PackageVersion Include="AwesomeAssertions.Json" Version="9.0.0" />
     <PackageVersion Include="Azure.Core" Version="1.45.0" />
     <PackageVersion Include="Azure.Data.AppConfiguration" Version="1.0.0" />
     <PackageVersion Include="Azure.Data.Tables" Version="12.8.3" />
