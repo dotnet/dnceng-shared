@@ -13,12 +13,12 @@
          See: https://github.com/dotnet/arcade/blob/main/eng/Versions.props -->
     <PackageVersion Include="AwesomeAssertions" Version="9.0.0" />
     <PackageVersion Include="AwesomeAssertions.Json" Version="9.0.0" />
-    <PackageVersion Include="Azure.Core" Version="1.45.0" />
+    <PackageVersion Include="Azure.Core" Version="1.50.0" />
     <PackageVersion Include="Azure.Data.AppConfiguration" Version="1.0.0" />
-    <PackageVersion Include="Azure.Data.Tables" Version="12.8.3" />
-    <PackageVersion Include="Azure.Identity" Version="1.11.4" />
+    <PackageVersion Include="Azure.Data.Tables" Version="12.9.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.13.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
-    <PackageVersion Include="Azure.Storage.Blobs" Version="12.16.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.26.0" />
     <PackageVersion Include="Castle.Core" Version="4.3.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.21.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
@@ -28,30 +28,30 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
     <!-- Force version 2.0.2 to avoid unsafe versions -->
     <PackageVersion Include="Microsoft.AspNetCore.Server.HttpSys" Version="2.0.2" />
-    <PackageVersion Include="Microsoft.Azure.Kusto.Ingest" Version="12.2.1" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Ingest" Version="14.0.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" />
     <PackageVersion Include="Microsoft.DiaSymReader.Converter" Version="1.1.0-beta2-19575-01" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.21.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.61.3" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.78.0" />
     <PackageVersion Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
     <PackageVersion Include="Microsoft.ServiceFabric" Version="8.2.1571" />
     <PackageVersion Include="Microsoft.ServiceFabric.Actors" Version="5.2.1571" />
@@ -71,12 +71,12 @@
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="5.2.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Newtonsoft" Version="5.2.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.2.1" />
-    <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.35.0" />
+    <PackageVersion Include="System.Collections.Immutable" Version="9.0.7" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
-    <PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+    <PackageVersion Include="System.Linq.Async" Version="6.0.3" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="9.0.7" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.7" />
     <PackageVersion Include="WindowsAzure.Storage" Version="9.3.3" />
     <PackageVersion Include="JetBrains.Annotations" Version="11.1.0" PrivateAssets="All" />
 
