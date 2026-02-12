@@ -7,6 +7,10 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Override central package version for transitive dependency from Kusto SDK -->
+    <PackageVersion Update="System.Collections.Immutable" Version="9.0.7" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
   <ItemGroup>
