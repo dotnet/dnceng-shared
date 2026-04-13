@@ -3,6 +3,8 @@
 
 using Microsoft.DotNet.GitHub.Authentication;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.DotNet.GitHub.Authentication;
 
@@ -12,6 +14,8 @@ public static class ServiceCollectionExtensions
     {
         return services
             .AddSingleton<IGitHubAppTokenProvider, GitHubAppTokenProvider>()
-            .AddSingleton<IGitHubTokenProvider, GitHubTokenProvider>();
+            .AddSingleton<IGitHubTokenProvider, GitHubTokenProvider>()
+            .TryAddTransient<ISystemClock, SystemClock>()
+            .TryAddTransient<IInstallationLookup, InMemoryCacheInstallationLookup>();
     }
 }
