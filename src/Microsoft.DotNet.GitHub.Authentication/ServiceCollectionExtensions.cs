@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.GitHub.Authentication;
+using Microsoft.DotNet.Services.Utility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Internal;
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
         return services
             .AddSingleton<IGitHubAppTokenProvider, GitHubAppTokenProvider>()
             .AddSingleton<IGitHubTokenProvider, GitHubTokenProvider>()
+            .TryAddSingleton<ExponentialRetry>()
             .TryAddTransient<ISystemClock, SystemClock>()
             .TryAddTransient<IInstallationLookup, InMemoryCacheInstallationLookup>();
     }
