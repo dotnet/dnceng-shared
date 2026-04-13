@@ -14,8 +14,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddGitHubTokenProvider(this IServiceCollection services)
     {
         return services
-            .AddSingleton<IGitHubAppTokenProvider, GitHubAppTokenProvider>()
-            .AddSingleton<IGitHubTokenProvider, GitHubTokenProvider>()
+            .TryAddSingleton<IGitHubAppTokenProvider, GitHubAppTokenProvider>()
+            .TryAddSingleton<IGitHubTokenProvider, GitHubTokenProvider>()
             .TryAddSingleton<ExponentialRetry>()
             .TryAddTransient<ISystemClock, SystemClock>()
             .TryAddTransient<IInstallationLookup, InMemoryCacheInstallationLookup>();
