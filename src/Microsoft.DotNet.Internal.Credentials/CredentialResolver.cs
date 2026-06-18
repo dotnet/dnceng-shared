@@ -57,6 +57,16 @@ public static class CredentialResolver
         string managedIdentityId,
         FederatedCredentialOptions federated)
     {
+        if (string.IsNullOrEmpty(federated.AppId))
+        {
+            throw new InvalidOperationException($"{nameof(FederatedCredentialOptions.AppId)} must be configured.");
+        }
+ 
+        if (string.IsNullOrEmpty(federated.TenantId))
+        {
+            throw new InvalidOperationException($"{nameof(FederatedCredentialOptions.TenantId)} must be configured.");
+        }
+
         ManagedIdentityCredential assertionCredential = CreateManagedIdentityCredential(managedIdentityId);
         TokenRequestContext assertionRequest = new([FederatedAssertionScope]);
 

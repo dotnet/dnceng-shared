@@ -90,7 +90,7 @@ public class AppCredential : TokenCredential
         var appCredential = new ClientAssertionCredential(
             TENANT_ID,
             appId,
-            async (ct) => (await miCredential.GetTokenAsync(new TokenRequestContext(["api://AzureADTokenExchange"]), ct)).Token);
+            async (ct) => (await miCredential.GetTokenAsync(new TokenRequestContext(["api://AzureADTokenExchange/.default"]), ct)).Token);
 
         var requestContext = new TokenRequestContext([$"api://{appId}/.default"]);
         return new AppCredential(appCredential, requestContext);
