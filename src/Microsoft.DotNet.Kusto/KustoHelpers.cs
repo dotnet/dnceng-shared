@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Identity;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
@@ -185,11 +187,54 @@ public static class KustoHelpers
             return kcsb.WithAadAzCliAuthentication();
         }
 
+        if (kustoOptions.CurrentValue.FederatedCredential != null)
+        {
+            TokenCredential federatedCredential = CreateFederatedTokenCredential(
+                kustoOptions.CurrentValue.ManagedIdentityId,
+                kustoOptions.CurrentValue.FederatedCredential);
+            return kcsb.WithAadAzureTokenCredentialsAuthentication(federatedCredential);
+        }
+
         if (string.IsNullOrEmpty(kustoOptions.CurrentValue.ManagedIdentityId))
         {
             return kcsb.WithAadSystemManagedIdentity();
         }
         return kcsb.WithAadUserManagedIdentity(kustoOptions.CurrentValue.ManagedIdentityId);
+    }
+
+    private const string FederatedAssertionScope = "api://AzureADTokenExchange/.default";
+
+    private static TokenCredential CreateFederatedTokenCredential(string managedIdentityId, FederatedCredentialOptions federated)
+    {
+        if (string.IsNullOrEmpty(federated.AppId))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.FederatedCredential)}.{nameof(FederatedCredentialOptions.AppId)} is not configured in app settings");
+        }
+
+        if (string.IsNullOrEmpty(federated.TenantId))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.FederatedCredential)}.{nameof(FederatedCredentialOptions.TenantId)} is not configured in app settings");
+        }
+
+        if (string.IsNullOrEmpty(managedIdentityId))
+        {
+            throw new ArgumentException($"{nameof(KustoOptions.ManagedIdentityId)} must be set when {nameof(KustoOptions.FederatedCredential)} is configured");
+        }
+
+        ManagedIdentityCredential assertionCredential = managedIdentityId == "system"
+            ? new ManagedIdentityCredential(Azure.Identity.ManagedIdentityId.SystemAssigned)
+            : new ManagedIdentityCredential(Azure.Identity.ManagedIdentityId.FromUserAssignedClientId(managedIdentityId));
+
+        TokenRequestContext assertionRequest = new(new[] { FederatedAssertionScope });
+
+        return new ClientAssertionCredential(
+            federated.TenantId,
+            federated.AppId,
+            async cancellationToken =>
+            {
+                AccessToken token = await assertionCredential.GetTokenAsync(assertionRequest, cancellationToken);
+                return token.Token;
+            });
     }
 }
 
