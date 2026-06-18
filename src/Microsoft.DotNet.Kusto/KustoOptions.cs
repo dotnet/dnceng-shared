@@ -11,4 +11,12 @@ public class KustoOptions
     public string ManagedIdentityId { get; set; }
     // For local development, use the Azure CLI for authentication
     public bool UseAzCliAuthentication { get; set; }
+
+    /// <summary>
+    /// When set, authentication is performed by exchanging a managed identity assertion
+    /// (using <see cref="ManagedIdentityId"/>) for a token issued to the configured app
+    /// in the configured tenant. Enables cross-tenant access from a source-tenant managed
+    /// identity to a target-tenant Kusto cluster via federated identity credentials.
+    /// </summary>
+    public FederatedCredentialOptions FederatedCredential { get; set; }
 }
