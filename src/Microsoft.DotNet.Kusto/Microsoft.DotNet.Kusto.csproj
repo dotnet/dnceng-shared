@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.Internal.DependencyInjection\Microsoft.DotNet.Internal.DependencyInjection.csproj" />
-  <ProjectReference Include="..\Microsoft.DotNet.Internal.Credentials\Microsoft.DotNet.Internal.Credentials.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Internal.Credentials\Microsoft.DotNet.Internal.Credentials.csproj" />
   </ItemGroup>
 
 </Project>
