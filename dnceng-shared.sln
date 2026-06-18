@@ -84,6 +84,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.SymbolHelper", "src\Microsoft.DotNet.Internal.SymbolHelper\Microsoft.DotNet.Internal.SymbolHelper.csproj", "{437D7B23-23F9-23E1-9215-CF37212E618C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.Credentials", "src\Microsoft.DotNet.Internal.Credentials\Microsoft.DotNet.Internal.Credentials.csproj", "{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.AzureDevOps.Authentication", "src\Microsoft.DotNet.Internal.AzureDevOps.Authentication\Microsoft.DotNet.Internal.AzureDevOps.Authentication.csproj", "{DCD4332B-4633-47EA-99E0-8D3C735626D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.Telemetry", "src\Microsoft.DotNet.Internal.Telemetry\Microsoft.DotNet.Internal.Telemetry.csproj", "{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -226,6 +232,18 @@ Global
 		{437D7B23-23F9-23E1-9215-CF37212E618C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{437D7B23-23F9-23E1-9215-CF37212E618C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{437D7B23-23F9-23E1-9215-CF37212E618C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -264,6 +282,9 @@ Global
 		{D95EC778-1CD8-454A-A6B9-19CA97066697} = {34208522-F5E0-497B-A65E-3337E46F4C72}
 		{EC528A5A-8CBD-7E14-DB46-5F4B1D69B77D} = {34208522-F5E0-497B-A65E-3337E46F4C72}
 		{5F698E6B-5E17-1927-D5EA-AB8B429EF12F} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
+		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
+		{DCD4332B-4633-47EA-99E0-8D3C735626D2} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
+		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D59283E1-A27A-4453-9A5A-61883FB163B3}
