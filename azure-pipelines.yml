@@ -57,9 +57,7 @@ extends:
           - job: Windows_NT
             timeoutInMinutes: 90
             variables:
-            # DotNet-Symbol-Server-Pats provides: microsoft-symbol-server-pat, symweb-symbol-server-pat
             # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
-            - group: DotNet-Symbol-Server-Pats
             - group: Publish-Build-Assets
             - _BuildConfig: Release
             - _SignType: test
