@@ -16,6 +16,7 @@ using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
+using Microsoft.DotNet.Internal.Credentials;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client.AppConfig;
@@ -202,8 +203,6 @@ public static class KustoHelpers
         return kcsb.WithAadUserManagedIdentity(kustoOptions.CurrentValue.ManagedIdentityId);
     }
 
-    private const string FederatedAssertionScope = "api://AzureADTokenExchange/.default";
-
     private static TokenCredential CreateFederatedTokenCredential(string managedIdentityId, FederatedCredentialOptions federated)
     {
         if (string.IsNullOrEmpty(federated.AppId))
@@ -221,20 +220,7 @@ public static class KustoHelpers
             throw new ArgumentException($"{nameof(KustoOptions.ManagedIdentityId)} must be set when {nameof(KustoOptions.FederatedCredential)} is configured");
         }
 
-        ManagedIdentityCredential assertionCredential = managedIdentityId == "system"
-            ? new ManagedIdentityCredential(Azure.Identity.ManagedIdentityId.SystemAssigned)
-            : new ManagedIdentityCredential(Azure.Identity.ManagedIdentityId.FromUserAssignedClientId(managedIdentityId));
-
-        TokenRequestContext assertionRequest = new(new[] { FederatedAssertionScope });
-
-        return new ClientAssertionCredential(
-            federated.TenantId,
-            federated.AppId,
-            async cancellationToken =>
-            {
-                AccessToken token = await assertionCredential.GetTokenAsync(assertionRequest, cancellationToken);
-                return token.Token;
-            });
+        return ManagedIdentityCredentialFactory.CreateFederatedCredential(federated.TenantId, federated.AppId, managedIdentityId);
     }
 }
 

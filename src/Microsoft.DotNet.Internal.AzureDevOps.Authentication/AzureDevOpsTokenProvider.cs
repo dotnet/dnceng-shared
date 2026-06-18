@@ -121,9 +121,7 @@ public class AzureDevOpsTokenProvider : IAzureDevOpsTokenProvider
             // 1. Managed identity (for server-to-AzDO scenarios)
             if (!string.IsNullOrEmpty(option.ManagedIdentityId))
             {
-                credentials[account] = option.ManagedIdentityId == "system"
-                    ? new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned)
-                    : new ManagedIdentityCredential(ManagedIdentityId.FromUserAssignedClientId(option.ManagedIdentityId));
+                credentials[account] = ManagedIdentityCredentialFactory.CreateManagedIdentityCredential(option.ManagedIdentityId);
                 continue;
             }
 
