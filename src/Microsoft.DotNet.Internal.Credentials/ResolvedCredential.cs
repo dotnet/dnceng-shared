@@ -28,11 +28,11 @@ public class ResolvingCredential(Func<TokenRequestContext, CancellationToken, st
 {
     public override AccessToken GetToken(TokenRequestContext context, CancellationToken cancellationToken)
     {
-        return new AccessToken(tokenResolver(context, cancellationToken), DateTimeOffset.UtcNow);
+        return new AccessToken(tokenResolver(context, cancellationToken), DateTimeOffset.UtcNow.AddMinutes(5));
     }
 
     public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext context, CancellationToken cancellationToken)
     {
-        return new ValueTask<AccessToken>(new AccessToken(tokenResolver(context, cancellationToken), DateTimeOffset.UtcNow));
+        return new ValueTask<AccessToken>(new AccessToken(tokenResolver(context, cancellationToken), DateTimeOffset.UtcNow.AddMinutes(5)));
     }
 }
