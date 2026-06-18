@@ -46,7 +46,7 @@ public class RemoteTokenProvider : IRemoteTokenProvider
 
         return repoType switch
         {
-            GitRepoType.GitHub => _gitHubTokenProvider.GetTokenForRepository(repoUri),
+            GitRepoType.GitHub => await _gitHubTokenProvider.GetTokenForRepositoryAsync(repoUri),
             GitRepoType.AzureDevOps => await _azdoTokenProvider.GetTokenForRepositoryAsync(repoUri),
             GitRepoType.Local => null,
             _ => throw new NotImplementedException($"Unsupported repository remote {repoUri}"),
