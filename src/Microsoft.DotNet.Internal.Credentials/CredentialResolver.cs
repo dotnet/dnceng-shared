@@ -61,7 +61,7 @@ public static class CredentialResolver
         {
             throw new InvalidOperationException($"{nameof(FederatedCredentialOptions.AppId)} must be configured.");
         }
- 
+
         if (string.IsNullOrEmpty(federated.TenantId))
         {
             throw new InvalidOperationException($"{nameof(FederatedCredentialOptions.TenantId)} must be configured.");
