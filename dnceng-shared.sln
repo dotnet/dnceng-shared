@@ -88,8 +88,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.AzureDevOps.Authentication", "src\Microsoft.DotNet.Internal.AzureDevOps.Authentication\Microsoft.DotNet.Internal.AzureDevOps.Authentication.csproj", "{DCD4332B-4633-47EA-99E0-8D3C735626D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.Telemetry", "src\Microsoft.DotNet.Internal.Telemetry\Microsoft.DotNet.Internal.Telemetry.csproj", "{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
