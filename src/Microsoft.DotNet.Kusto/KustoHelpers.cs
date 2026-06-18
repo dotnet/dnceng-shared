@@ -190,9 +190,11 @@ public static class KustoHelpers
 
         if (kustoOptions.CurrentValue.FederatedCredential != null)
         {
-            TokenCredential federatedCredential = CreateFederatedTokenCredential(
-                kustoOptions.CurrentValue.ManagedIdentityId,
-                kustoOptions.CurrentValue.FederatedCredential);
+            TokenCredential federatedCredential = CredentialResolver.CreateCredential(new CredentialResolverOptions
+            {
+                ManagedIdentityId = kustoOptions.CurrentValue.ManagedIdentityId,
+                FederatedCredential = kustoOptions.CurrentValue.FederatedCredential,
+            });
             return kcsb.WithAadAzureTokenCredentialsAuthentication(federatedCredential);
         }
 
@@ -201,26 +203,6 @@ public static class KustoHelpers
             return kcsb.WithAadSystemManagedIdentity();
         }
         return kcsb.WithAadUserManagedIdentity(kustoOptions.CurrentValue.ManagedIdentityId);
-    }
-
-    private static TokenCredential CreateFederatedTokenCredential(string managedIdentityId, FederatedCredentialOptions federated)
-    {
-        if (string.IsNullOrEmpty(federated.AppId))
-        {
-            throw new ArgumentException($"{nameof(KustoOptions.FederatedCredential)}.{nameof(FederatedCredentialOptions.AppId)} is not configured in app settings");
-        }
-
-        if (string.IsNullOrEmpty(federated.TenantId))
-        {
-            throw new ArgumentException($"{nameof(KustoOptions.FederatedCredential)}.{nameof(FederatedCredentialOptions.TenantId)} is not configured in app settings");
-        }
-
-        if (string.IsNullOrEmpty(managedIdentityId))
-        {
-            throw new ArgumentException($"{nameof(KustoOptions.ManagedIdentityId)} must be set when {nameof(KustoOptions.FederatedCredential)} is configured");
-        }
-
-        return ManagedIdentityCredentialFactory.CreateFederatedCredential(federated.TenantId, federated.AppId, managedIdentityId);
     }
 }
 

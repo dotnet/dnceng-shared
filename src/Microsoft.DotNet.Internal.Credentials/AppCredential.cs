@@ -83,7 +83,15 @@ public class AppCredential : TokenCredential
     /// </summary>
     public static AppCredential CreateManagedIdentityCredential(string appId, string managedIdentityId)
     {
-        var appCredential = ManagedIdentityCredentialFactory.CreateFederatedCredential(TENANT_ID, appId, managedIdentityId);
+        var miCredential = managedIdentityId == "system"
+            ? new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned)
+            : new ManagedIdentityCredential(ManagedIdentityId.FromUserAssignedClientId(managedIdentityId));
+
+        var appCredential = new ClientAssertionCredential(
+            TENANT_ID,
+            appId,
+            async (ct) => (await miCredential.GetTokenAsync(new TokenRequestContext(["api://AzureADTokenExchange"]), ct)).Token);
+
         var requestContext = new TokenRequestContext([$"api://{appId}/.default"]);
         return new AppCredential(appCredential, requestContext);
     }
