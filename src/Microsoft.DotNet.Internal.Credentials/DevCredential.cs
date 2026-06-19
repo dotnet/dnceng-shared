@@ -10,12 +10,23 @@ namespace Microsoft.DotNet.Internal.Credentials;
 /// </summary>
 public class DevCredential : ChainedTokenCredential
 {
-    public DevCredential() : base(
-        new AzureCliCredential(),
-        new AzureDeveloperCliCredential(),
-        new VisualStudioCredential(),
-        new VisualStudioCodeCredential(),
-        new EnvironmentCredential())
+    public DevCredential(bool includeInteractive = true) : base(
+        includeInteractive
+          ? [
+                new AzureCliCredential(),
+                new AzureDeveloperCliCredential(),
+                new VisualStudioCredential(),
+                new VisualStudioCodeCredential(),
+                new EnvironmentCredential(),
+                new InteractiveBrowserCredential(),
+            ]
+          : [
+                new AzureCliCredential(),
+                new AzureDeveloperCliCredential(),
+                new VisualStudioCredential(),
+                new VisualStudioCodeCredential(),
+                new EnvironmentCredential(),
+            ])
     {
     }
 }
