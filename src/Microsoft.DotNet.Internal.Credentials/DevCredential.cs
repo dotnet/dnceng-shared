@@ -12,6 +12,7 @@ public class DevCredential : ChainedTokenCredential
 {
     public DevCredential() : base(
         new AzureCliCredential(),
+        new AzureDeveloperCliCredential(),
         new VisualStudioCredential(),
         new VisualStudioCodeCredential(),
         new EnvironmentCredential())
