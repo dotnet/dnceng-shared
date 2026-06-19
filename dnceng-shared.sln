@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.33530.505
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.11912.234 insiders
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Services.Utility", "src\Microsoft.DotNet.Services.Utility\Microsoft.DotNet.Services.Utility.csproj", "{2CE4E709-4122-48F2-B5FA-F7F2F98EE18F}"
 EndProject
@@ -238,10 +238,6 @@ Global
 		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCD4332B-4633-47EA-99E0-8D3C735626D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -282,7 +278,6 @@ Global
 		{5F698E6B-5E17-1927-D5EA-AB8B429EF12F} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
 		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
 		{DCD4332B-4633-47EA-99E0-8D3C735626D2} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
-		{FAA5B2D1-A8B7-4242-BC59-5FC0E9409CA0} = {929121DF-5CE0-4D6A-8228-DAD71BE798E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D59283E1-A27A-4453-9A5A-61883FB163B3}
