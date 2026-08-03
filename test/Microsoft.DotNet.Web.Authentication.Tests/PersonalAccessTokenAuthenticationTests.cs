@@ -245,6 +245,99 @@ public class PersonalAccessTokenAuthenticationTests
         (await response.Content.ReadAsStringAsync()).Should().Be(nameof(InvalidOperationException));
     }
 
+    [Test]
+    public void VersionTwoTokenRoundTripsWithoutEncodingPassword()
+    {
+        const string password = "scannerVisiblePassword";
+
+        string token = PersonalAccessTokenUtilities.EncodeVersionTwoToken(UserId, password);
+
+        PersonalAccessTokenUtilities.TryDecodeToken(token, 10, out int tokenId, out string decodedPassword)
+            .Should().BeTrue();
+        tokenId.Should().Be(UserId);
+        decodedPassword.Should().Be(password);
+        token.Should().EndWith($".{password}");
+    }
+
+    [Test]
+    public async Task VersionTwoTokenAuthenticates()
+    {
+        const string password = "scannerVisiblePassword";
+        using HttpClient client = CreateClient(out _, 10, storedPassword: password);
+        string token = PersonalAccessTokenUtilities.EncodeVersionTwoToken(UserId, password);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.test/pat/user-name");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using HttpResponseMessage response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await response.Content.ReadAsStringAsync()).Should().Be(GetUser(UserId).Name);
+    }
+
+    [Test]
+    public async Task VersionTwoTokenWithAlteredPasswordIsRejected()
+    {
+        const string password = "scannerVisiblePassword";
+        using HttpClient client = CreateClient(out _, 10, storedPassword: password);
+        string token = PersonalAccessTokenUtilities.EncodeVersionTwoToken(UserId, password + "altered");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.test/pat/user-name");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using HttpResponseMessage response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [TestCase("dnp2.")]
+    [TestCase("dnp2.42")]
+    [TestCase("dnp2..secret")]
+    [TestCase("dnp2.42.")]
+    [TestCase("dnp2.-1.secret")]
+    [TestCase("dnp2.not-an-id.secret")]
+    [TestCase("dnp2.2147483648.secret")]
+    [TestCase("dnp2.42.secret.extra")]
+    public void MalformedVersionTwoTokenIsRejected(string token)
+    {
+        PersonalAccessTokenUtilities.TryDecodeToken(token, 10, out _, out _)
+            .Should().BeFalse();
+    }
+
+    [Test]
+    public void InvalidLegacyBase64TokenIsRejected()
+    {
+        PersonalAccessTokenUtilities.TryDecodeToken("not+base64url", 10, out _, out _)
+            .Should().BeFalse();
+    }
+
+    [Test]
+    public void LegacyTokenStillDecodes()
+    {
+        byte[] passwordBytes = GetPasswordBytesForToken(UserId, 10);
+        string token = PersonalAccessTokenUtilities.EncodeToken(UserId, passwordBytes);
+
+        PersonalAccessTokenUtilities.TryDecodeToken(token, 10, out int tokenId, out string password)
+            .Should().BeTrue();
+        tokenId.Should().Be(UserId);
+        password.Should().Be(PersonalAccessTokenUtilities.EncodePasswordBytes(passwordBytes));
+    }
+
+    [TestCase("")]
+    [TestCase("contains.separator")]
+    public void VersionTwoTokenRejectsInvalidPasswords(string password)
+    {
+        Action encode = () => PersonalAccessTokenUtilities.EncodeVersionTwoToken(UserId, password);
+
+        encode.Should().Throw<ArgumentException>();
+    }
+
+    [Test]
+    public void VersionTwoTokenRejectsNegativeTokenId()
+    {
+        Action encode = () => PersonalAccessTokenUtilities.EncodeVersionTwoToken(-1, "password");
+
+        encode.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
     public const int UserId = 42;
 
 
@@ -262,7 +355,8 @@ public class PersonalAccessTokenAuthenticationTests
         out TestAppFactory<EmptyTestStartup> factory,
         int passwordSize = 17,
         string schemeName = null,
-        Func<PersonalAccessTokenValidatePrincipalContext<TestUser>, Task> validatedPrincipal = null)
+        Func<PersonalAccessTokenValidatePrincipalContext<TestUser>, Task> validatedPrincipal = null,
+        string storedPassword = null)
     {
         Dictionary<int, string> storedHashes = new Dictionary<int, string>();
 
@@ -277,7 +371,9 @@ public class PersonalAccessTokenAuthenticationTests
                     {
                         string hash = storedHashes.GetValueOrDefault(
                             context.TokenId,
-                            TestHasher.CalculateHash(user, GetPasswordForToken(context.TokenId, passwordSize))
+                            TestHasher.CalculateHash(
+                                user,
+                                storedPassword ?? GetPasswordForToken(context.TokenId, passwordSize))
                         );
                         context.Success(hash, user);
                     }
