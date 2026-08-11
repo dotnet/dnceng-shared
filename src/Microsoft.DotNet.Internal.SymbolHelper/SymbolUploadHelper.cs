@@ -306,9 +306,15 @@ public sealed class SymbolUploadHelper
         {
             logger.Information("Extracting symbol package {0} to {1}", packageName, packageExtractDir);
 
+            var extractionPlan = new List<(ZipArchiveEntry Entry, string DestinationPath)>(zipArchive.Entries.Count);
             foreach (ZipArchiveEntry entry in zipArchive.Entries)
             {
-                if (entry.FullName.EndsWith('/'))
+                extractionPlan.Add((entry, GetValidatedArchiveEntryPath(packageExtractDir, entry.FullName)));
+            }
+
+            foreach ((ZipArchiveEntry entry, string entryPath) in extractionPlan)
+            {
+                if (entry.FullName.EndsWith('/') || entry.FullName.EndsWith('\\'))
                 {
                     Debug.Assert(entry.Length == 0);
                     continue;
@@ -321,7 +327,6 @@ public sealed class SymbolUploadHelper
                 }
 
                 logger.Verbose("Extracting {0}", entry.FullName);
-                string entryPath = Path.Combine(packageExtractDir, entry.FullName);
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(entryPath)!);
                 using Stream entryStream = entry.Open();
                 using FileStream entryFile = File.Create(entryPath);
@@ -361,6 +366,8 @@ public sealed class SymbolUploadHelper
 
         bool ShouldIndexPackageFile(string relativeFilePath)
         {
+            relativeFilePath = relativeFilePath.Replace('\\', '/').Replace("//", "/");
+
             if (relativeFilePath.StartsWith("ref/")
                 || relativeFilePath.StartsWith("_rels/")
                 || relativeFilePath.StartsWith("package/")
@@ -370,8 +377,6 @@ public sealed class SymbolUploadHelper
                 return false;
             }
 
-            relativeFilePath = relativeFilePath.Replace("//", "/");
-
             if (_packageFileExclusions.Contains(relativeFilePath))
             {
                 return false;
@@ -380,6 +385,43 @@ public sealed class SymbolUploadHelper
             string extension = Path.GetExtension(relativeFilePath);
             return s_validExtensions.Contains(extension);
         }
+    }
+
+    private static string GetValidatedArchiveEntryPath(string extractionRoot, string entryName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(extractionRoot);
+        ArgumentException.ThrowIfNullOrEmpty(entryName);
+
+        if (entryName[0] is '/' or '\\'
+            || (entryName.Length >= 2 && char.IsAsciiLetter(entryName[0]) && entryName[1] == ':'))
+        {
+            throw new InvalidDataException($"Archive entry '{entryName}' uses an absolute path.");
+        }
+
+        string normalizedEntryName = entryName
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+        if (Path.IsPathRooted(normalizedEntryName))
+        {
+            throw new InvalidDataException($"Archive entry '{entryName}' uses an absolute path.");
+        }
+
+        string canonicalRoot = Path.GetFullPath(extractionRoot);
+        string rootPrefix = Path.EndsInDirectorySeparator(canonicalRoot)
+            ? canonicalRoot
+            : canonicalRoot + Path.DirectorySeparatorChar;
+        string candidatePath = Path.GetFullPath(Path.Combine(canonicalRoot, normalizedEntryName));
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        if (!candidatePath.StartsWith(rootPrefix, comparison))
+        {
+            throw new InvalidDataException(
+                $"Archive entry '{entryName}' resolves outside extraction root '{canonicalRoot}'.");
+        }
+
+        return candidatePath;
     }
 
     private void ConvertPortablePdbsInDirectory(ScopedTracer logger, string filesDir)
