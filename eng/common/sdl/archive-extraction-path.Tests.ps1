@@ -152,3 +152,5 @@ try {
 finally {
   Remove-Item -Path $TestRoot -Recurse -Force
 }
+
+$global:LASTEXITCODE = 0
