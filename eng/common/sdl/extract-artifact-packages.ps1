@@ -54,8 +54,9 @@ try {
     Write-Host -NoNewLine 'Extracting ' ([System.IO.Path]::GetFileName($PackagePath)) '...'
 
     $PackageId = [System.IO.Path]::GetFileNameWithoutExtension($PackagePath)
-    $PackageExtractPath = [System.IO.Path]::GetFullPath(
-      (Join-Path -Path $ExtractionRoot -ChildPath $PackageId))
+    $PackageExtractPath = Get-ValidatedArchiveEntryPath `
+      -ExtractionRoot $ExtractionRoot `
+      -EntryName $PackageId
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
 

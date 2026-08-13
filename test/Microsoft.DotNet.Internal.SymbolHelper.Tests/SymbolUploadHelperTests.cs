@@ -72,7 +72,10 @@ public class SymbolUploadHelperTests
 
         string result = ValidateArchiveEntryPath(extractionRoot, entryName);
 
-        result.Should().Be(Path.Combine(extractionRoot, expectedRelativePath));
+        string platformRelativePath = expectedRelativePath
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+        result.Should().Be(Path.Combine(extractionRoot, platformRelativePath));
     }
 
     [TestCase("nested/")]

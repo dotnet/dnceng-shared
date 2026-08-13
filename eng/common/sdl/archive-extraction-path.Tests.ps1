@@ -122,8 +122,11 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw "Valid package extraction should succeed. Output: $($ValidRunOutput -join [Environment]::NewLine)"
   }
-  foreach ($RelativePath in @('lib\nested.dll', 'tools\nested.exe', 'symbols\nested.pdb')) {
-    if (!(Test-Path (Join-Path (Join-Path $ValidOutput 'valid') $RelativePath))) {
+  foreach ($RelativePath in @('lib/nested.dll', 'tools/nested.exe', 'symbols/nested.pdb')) {
+    $PlatformRelativePath = $RelativePath.Replace(
+      '/',
+      [System.IO.Path]::DirectorySeparatorChar)
+    if (!(Test-Path (Join-Path (Join-Path $ValidOutput 'valid') $PlatformRelativePath))) {
       throw "Expected valid archive entry '$RelativePath' to be extracted."
     }
   }
@@ -147,6 +150,23 @@ try {
   }
   if (Test-Path (Join-Path (Join-Path $InvalidOutput 'invalid') 'safe.dll')) {
     throw 'Archive entries were extracted before the malicious path was rejected.'
+  }
+
+  $InvalidPackageNameInput = Join-Path $TestRoot 'invalid-package-name-input'
+  $InvalidPackageNameOutput = Join-Path $TestRoot 'invalid-package-name-output'
+  [System.IO.Directory]::CreateDirectory($InvalidPackageNameInput) | Out-Null
+  New-TestPackage -Path (Join-Path $InvalidPackageNameInput '...nupkg') -EntryNames @(
+    'safe.dll'
+  )
+
+  $InvalidPackageNameRunOutput = & (Get-Process -Id $PID).Path -NoLogo -NoProfile `
+    -File "$PSScriptRoot\extract-artifact-packages.ps1" `
+    -InputPath $InvalidPackageNameInput -ExtractPath $InvalidPackageNameOutput 2>&1
+  if ($LASTEXITCODE -eq 0) {
+    throw "A package name resolving outside the extraction root should fail. Output: $($InvalidPackageNameRunOutput -join [Environment]::NewLine)"
+  }
+  if (Test-Path (Join-Path $TestRoot 'safe.dll')) {
+    throw 'A malicious package name created a file outside the extraction directory.'
   }
 }
 finally {
