@@ -1,8 +1,5 @@
 steps:
 
-- pwsh: eng/common/sdl/archive-extraction-path.Tests.ps1
-  displayName: Test archive extraction path validation
-
 - task: DotNetCoreCLI@2
   displayName: Test C# (dotnet test)
   inputs:

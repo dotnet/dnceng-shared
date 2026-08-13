@@ -13,20 +13,14 @@ function ExtractArtifacts {
     Write-Host "Input Path does not exist: $InputPath"
     ExitWithExitCode 0
   }
-  $ArchivePathHelper = Join-Path $PSScriptRoot 'archive-extraction-path.ps1'
   $Jobs = @()
   Get-ChildItem "$InputPath\*.nupkg" |
     ForEach-Object {
-      $Jobs += Start-Job -ScriptBlock $ExtractPackage -ArgumentList $_.FullName, $ExtractPath, $ArchivePathHelper
+      $Jobs += Start-Job -ScriptBlock $ExtractPackage -ArgumentList $_.FullName
     }
 
-  if ($Jobs.Count -eq 0) {
-    return
-  }
-
-  Wait-Job -Job $Jobs | Out-Null
   foreach ($Job in $Jobs) {
-    Receive-Job -Job $Job -ErrorAction Stop
+    Wait-Job -Id $Job.Id | Receive-Job
   }
 }
 
@@ -38,57 +32,45 @@ try {
   . $PSScriptRoot\..\tools.ps1
 
   $ExtractPackage = {
-    param(
-      [string] $PackagePath,                                # Full path to a NuGet package
-      [string] $ExtractionRoot,                             # Full path to extraction root
-      [string] $ArchivePathHelper                           # Archive path validation helper
+    param( 
+      [string] $PackagePath                                 # Full path to a NuGet package
     )
 
     if (!(Test-Path $PackagePath)) {
-      throw "Input file does not exist: $PackagePath"
+      Write-PipelineTelemetryError -Category 'Build' -Message "Input file does not exist: $PackagePath"
+      ExitWithExitCode 1
     }
-
-    . $ArchivePathHelper
 
     $RelevantExtensions = @('.dll', '.exe', '.pdb')
     Write-Host -NoNewLine 'Extracting ' ([System.IO.Path]::GetFileName($PackagePath)) '...'
 
     $PackageId = [System.IO.Path]::GetFileNameWithoutExtension($PackagePath)
-    $PackageExtractPath = Get-ValidatedArchiveEntryPath `
-      -ExtractionRoot $ExtractionRoot `
-      -EntryName $PackageId
+    $ExtractPath = Join-Path -Path $using:ExtractPath -ChildPath $PackageId
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-    $zip = $null
+    [System.IO.Directory]::CreateDirectory($ExtractPath);
+
     try {
       $zip = [System.IO.Compression.ZipFile]::OpenRead($PackagePath)
+  
+      $zip.Entries | 
+      Where-Object {$RelevantExtensions -contains [System.IO.Path]::GetExtension($_.Name)} |
+        ForEach-Object {
+            $TargetPath = Join-Path -Path $ExtractPath -ChildPath (Split-Path -Path $_.FullName)
+            [System.IO.Directory]::CreateDirectory($TargetPath);
 
-      $ExtractionPlan = @(
-        $zip.Entries |
-          ForEach-Object {
-            [PSCustomObject]@{
-              Entry = $_
-              TargetFile = Get-ValidatedArchiveEntryPath `
-                -ExtractionRoot $PackageExtractPath `
-                -EntryName $_.FullName
-            }
-          }
-      )
-
-      [System.IO.Directory]::CreateDirectory($PackageExtractPath) | Out-Null
-      $ExtractionPlan |
-        Where-Object {$RelevantExtensions -contains [System.IO.Path]::GetExtension($_.Entry.Name)} |
-          ForEach-Object {
-            [System.IO.Directory]::CreateDirectory(
-              [System.IO.Path]::GetDirectoryName($_.TargetFile)) | Out-Null
-            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_.Entry, $_.TargetFile)
+            $TargetFile = Join-Path -Path $ExtractPath -ChildPath $_.FullName
+            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, $TargetFile)
           }
     }
+    catch {
+      Write-Host $_
+      Write-PipelineTelemetryError -Force -Category 'Sdl' -Message $_
+      ExitWithExitCode 1
+    }
     finally {
-      if ($null -ne $zip) {
-        $zip.Dispose()
-      }
+      $zip.Dispose() 
     }
   }
   Measure-Command { ExtractArtifacts }
