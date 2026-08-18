@@ -82,8 +82,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.AkaMsLinks", "src\Microsoft.DotNet.Internal.AkaMsLinks\Microsoft.DotNet.Internal.AkaMsLinks.csproj", "{5F698E6B-5E17-1927-D5EA-AB8B429EF12F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.SymbolHelper", "src\Microsoft.DotNet.Internal.SymbolHelper\Microsoft.DotNet.Internal.SymbolHelper.csproj", "{437D7B23-23F9-23E1-9215-CF37212E618C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.Credentials", "src\Microsoft.DotNet.Internal.Credentials\Microsoft.DotNet.Internal.Credentials.csproj", "{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Internal.AzureDevOps.Authentication", "src\Microsoft.DotNet.Internal.AzureDevOps.Authentication\Microsoft.DotNet.Internal.AzureDevOps.Authentication.csproj", "{DCD4332B-4633-47EA-99E0-8D3C735626D2}"
@@ -226,10 +224,6 @@ Global
 		{5F698E6B-5E17-1927-D5EA-AB8B429EF12F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F698E6B-5E17-1927-D5EA-AB8B429EF12F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F698E6B-5E17-1927-D5EA-AB8B429EF12F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{437D7B23-23F9-23E1-9215-CF37212E618C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{437D7B23-23F9-23E1-9215-CF37212E618C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{437D7B23-23F9-23E1-9215-CF37212E618C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{437D7B23-23F9-23E1-9215-CF37212E618C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2E9AC2-E199-41E0-8865-2AE2844EF3AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
