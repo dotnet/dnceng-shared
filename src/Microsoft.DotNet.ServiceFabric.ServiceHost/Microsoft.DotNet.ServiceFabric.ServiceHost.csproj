@@ -5,7 +5,7 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == '$(NetCurrent)'">
     <!-- Service Fabric's ASP.NET Core communication listener still requires the legacy IWebHost pipeline. -->
     <NoWarn>$(NoWarn);ASPDEPR004;ASPDEPR008;SYSLIB0014</NoWarn>
   </PropertyGroup>
