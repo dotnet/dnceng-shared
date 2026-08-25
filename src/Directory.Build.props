@@ -1,8 +1,0 @@
-<Project>
-  <Import Project="..\Directory.Build.props" />
-
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;$(NetCurrent)</TargetFrameworks>
-    <TargetFramework></TargetFramework>
-  </PropertyGroup>
-</Project>
