@@ -5,11 +5,6 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == '$(NetCurrent)'">
-    <!-- Service Fabric's ASP.NET Core communication listener still requires the legacy IWebHost pipeline. -->
-    <NoWarn>$(NoWarn);ASPDEPR004;ASPDEPR008;SYSLIB0014</NoWarn>
-  </PropertyGroup>
-
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
@@ -20,6 +15,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.DependencyCollector" />
     <PackageReference Include="Microsoft.ApplicationInsights.PerfCounterCollector" />
     <PackageReference Include="Microsoft.ApplicationInsights.ServiceFabric" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" />
     <PackageReference Include="Microsoft.ServiceFabric.Actors" />

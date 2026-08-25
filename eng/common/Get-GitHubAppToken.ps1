@@ -72,34 +72,25 @@ $digestBytes  = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($signi
 $digestBase64 = [Convert]::ToBase64String($digestBytes)
 
 Write-Host "Signing JWT with key '$KeyName' in vault '$KeyVaultName'..."
-$previousNativeCommandErrorPreference = $PSNativeCommandUseErrorActionPreference
 try {
-    # Azure CLI can emit non-fatal Python warnings to stderr even when signing succeeds.
-    # Use the exit code to determine success for this invocation.
-    $PSNativeCommandUseErrorActionPreference = $false
-    $signatureBase64 = az keyvault key sign `
+    $signatureUrl = az keyvault key sign `
         --vault-name $KeyVaultName `
         --name $KeyName `
         --algorithm RS256 `
         --digest $digestBase64 `
-        --query signature `
+        --query value `
         --output tsv `
         --only-show-errors
-    $signExitCode = $LASTEXITCODE
 }
 catch {
     Write-PipelineTelemetryError -Category 'Build' -Message "Failed to sign the JWT via Key Vault (key '$KeyName', vault '$KeyVaultName'): $_. Verify the service connection identity has the 'Key Vault Crypto User' role (Sign action) on the key."
     exit 1
 }
-finally {
-    $PSNativeCommandUseErrorActionPreference = $previousNativeCommandErrorPreference
-}
-if ($signExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($signatureBase64)) {
-    Write-PipelineTelemetryError -Category 'Build' -Message "'az keyvault key sign' exited with code $signExitCode for key '$KeyName' in vault '$KeyVaultName'. Verify the service connection identity has the 'Key Vault Crypto User' role (Sign action) on the key."
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($signatureUrl)) {
+    Write-PipelineTelemetryError -Category 'Build' -Message "'az keyvault key sign' exited with code $LASTEXITCODE for key '$KeyName' in vault '$KeyVaultName'. Verify the service connection identity has the 'Key Vault Crypto User' role (Sign action) on the key."
     exit 1
 }
-$signatureUrl = $signatureBase64.Trim().TrimEnd('=').Replace('+', '-').Replace('/', '_')
-$jwt = "$signingInput.$signatureUrl"
+$jwt = "$signingInput.$($signatureUrl.Trim())"
 
 $headers = @{
     Authorization          = "Bearer $jwt"
