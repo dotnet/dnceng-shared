@@ -8,6 +8,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     
+    <PackageReference Include="Microsoft.Security.Utilities.Core" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Octokit" />
   </ItemGroup>

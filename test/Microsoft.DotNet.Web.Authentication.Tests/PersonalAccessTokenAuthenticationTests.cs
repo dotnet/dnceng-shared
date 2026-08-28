@@ -23,6 +23,7 @@ using Microsoft.DotNet.Internal.Testing.Utility;
 using Microsoft.DotNet.Web.Authentication.AccessToken;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
+using Microsoft.Security.Utilities;
 using Moq;
 using NUnit.Framework;
 
@@ -210,6 +211,22 @@ public class PersonalAccessTokenAuthenticationTests
         using HttpClient client = CreateClient(out _, 10);
 
         string token = await client.GetStringAsync($"https://example.test/pat/create-token/{UserId}");
+
+        token.Should().StartWith(PersonalAccessTokenUtilities.VersionTwoTokenPrefix);
+        PersonalAccessTokenUtilities.TryDecodeToken(token, 10, out int tokenId, out string password)
+            .Should().BeTrue();
+        tokenId.Should().Be(UserId);
+        password.Should().HaveLength((int)IdentifiableSecrets.StandardEncodedCommonAnnotatedKeySize);
+        password.Should().Contain(IdentifiableSecrets.CommonAnnotatedKeySignature);
+        IdentifiableSecrets.TryValidateCommonAnnotatedKey(
+                password,
+                PersonalAccessTokenAuthenticationHandler<TestUser>.HisV2ProviderSignature)
+            .Should().BeTrue();
+        string alteredPassword = (password[0] == 'A' ? 'B' : 'A') + password.Substring(1);
+        IdentifiableSecrets.TryValidateCommonAnnotatedKey(
+                alteredPassword,
+                PersonalAccessTokenAuthenticationHandler<TestUser>.HisV2ProviderSignature)
+            .Should().BeFalse();
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://example.test/pat/user-name");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

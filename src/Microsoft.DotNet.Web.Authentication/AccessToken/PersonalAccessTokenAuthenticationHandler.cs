@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Security.Utilities;
 
 namespace Microsoft.DotNet.Web.Authentication.AccessToken;
 
@@ -132,6 +132,8 @@ public static class PersonalAccessTokenUtilities
 public class PersonalAccessTokenAuthenticationHandler<TUser> :
     AuthenticationHandler<PersonalAccessTokenAuthenticationOptions<TUser>> where TUser : class
 {
+    internal const string HisV2ProviderSignature = "DNHP";
+
     public PersonalAccessTokenAuthenticationHandler(
         IOptionsMonitor<PersonalAccessTokenAuthenticationOptions<TUser>> options,
         ILoggerFactory logger,
@@ -152,6 +154,9 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
         set => base.Events = value;
     }
 
+    /// <summary>
+    /// Gets the decoded byte count of a legacy personal access token.
+    /// </summary>
     public int TokenByteCount => PersonalAccessTokenUtilities.CalculateTokenSizeForPasswordSize(Options.PasswordSize);
 
     protected override Task<object> CreateEventsAsync()
@@ -159,15 +164,14 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
         return Task.FromResult<object>(new PersonalAccessTokenEvents<TUser>());
     }
 
-    private byte[] GeneratePassword()
+    private static string GeneratePassword()
     {
-        var bytes = new byte[Options.PasswordSize];
-        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(bytes);
-        }
-
-        return bytes;
+        return IdentifiableSecrets.GenerateCommonAnnotatedKey(
+            base64EncodedSignature: HisV2ProviderSignature,
+            customerManagedKey: false,
+            platformReserved: null,
+            providerReserved: null,
+            longForm: false);
     }
 
     private (int tokenId, string password)? DecodeToken(string input)
@@ -186,12 +190,11 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
 
     public async Task<(int id, string value)> CreateToken(TUser user, string name)
     {
-        byte[] passwordBytes = GeneratePassword();
-        string password = PersonalAccessTokenUtilities.EncodePasswordBytes(passwordBytes);
+        string password = GeneratePassword();
         string hash = PasswordHasher.HashPassword(user, password);
         var context = new SetTokenHashContext<TUser>(Context, user, name, hash);
         int tokenId = await Events.SetTokenHash(context);
-        return (tokenId, PersonalAccessTokenUtilities.EncodeToken(tokenId, passwordBytes));
+        return (tokenId, PersonalAccessTokenUtilities.EncodeVersionTwoToken(tokenId, password));
     }
 
     public async Task<TUser> VerifyToken(string token)
