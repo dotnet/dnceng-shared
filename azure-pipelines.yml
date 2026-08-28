@@ -57,8 +57,6 @@ extends:
           - job: Windows_NT
             timeoutInMinutes: 90
             variables:
-            # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
-            - group: Publish-Build-Assets
             - _BuildConfig: Release
             - _SignType: test
             - _InternalBuildArgs: /p:DotNetSignType=$(_SignType)

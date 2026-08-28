@@ -118,7 +118,14 @@ public class AzureDevOpsTokenProvider : IAzureDevOpsTokenProvider
                 continue;
             }
 
-            // 1. Managed identity (for server-to-AzDO scenarios)
+            // 1. Cross-tenant federated credential
+            if (option.FederatedCredential is not null)
+            {
+                credentials[account] = CredentialResolver.CreateCredential(option);
+                continue;
+            }
+
+            // 2. Managed identity (for server-to-AzDO scenarios)
             if (!string.IsNullOrEmpty(option.ManagedIdentityId))
             {
                 credentials[account] = option.ManagedIdentityId == "system"
@@ -127,14 +134,14 @@ public class AzureDevOpsTokenProvider : IAzureDevOpsTokenProvider
                 continue;
             }
 
-            // 2. Azure CLI authentication setup by the caller (for CI scenarios)
+            // 3. Azure CLI authentication setup by the caller (for CI scenarios)
             if (option.DisableInteractiveAuth)
             {
                 credentials[account] = AppCredential.CreateNonUserCredential(option.AppId);
                 continue;
             }
 
-            // 3. Interactive login (user-based scenario)
+            // 4. Interactive login (user-based scenario)
             credentials[account] = new DevCredential(includeInteractive: true);
         }
 
