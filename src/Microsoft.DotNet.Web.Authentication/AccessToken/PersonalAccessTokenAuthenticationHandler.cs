@@ -166,6 +166,8 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
 
     private static string GeneratePassword()
     {
+        // PATs are service-local credentials, not Azure resource keys, so there is no
+        // cloud, region, or tenant metadata to encode.
         return IdentifiableSecrets.GenerateCommonAnnotatedKey(
             base64EncodedSignature: HisV2ProviderSignature,
             customerManagedKey: false,
