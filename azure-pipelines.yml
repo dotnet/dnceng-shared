@@ -26,8 +26,7 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     settings:
-      networkIsolationAdditionalDomainAllowList:
-      - dotnetbuilds.blob.core.windows.net
+      networkIsolationPolicy: Preferred,GitHub,AzureStorage
     pool:
       name: NetCore1ESPool-Internal
       image: 1es-windows-2022
