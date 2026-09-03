@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -13,11 +13,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Security.Utilities;
 
 namespace Microsoft.DotNet.Web.Authentication.AccessToken;
 
 public static class PersonalAccessTokenUtilities
 {
+    internal const string VersionTwoTokenPrefix = "dnp2.";
+
     public static int TokenIdByteCount => sizeof(int);
     public static int CalculateTokenSizeForPasswordSize(int passwordSize) => TokenIdByteCount + passwordSize;
 
@@ -32,11 +35,105 @@ public static class PersonalAccessTokenUtilities
     {
         return WebEncoders.Base64UrlEncode(passwordBytes);
     }
+
+    internal static string EncodeVersionTwoToken(int tokenId, string password)
+    {
+        if (tokenId < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tokenId));
+        }
+
+        if (string.IsNullOrEmpty(password))
+        {
+            throw new ArgumentException("The token password must not be empty.", nameof(password));
+        }
+
+        if (password.Contains('.'))
+        {
+            throw new ArgumentException("The token password must not contain the token separator.", nameof(password));
+        }
+
+        return $"{VersionTwoTokenPrefix}{tokenId.ToString(CultureInfo.InvariantCulture)}.{password}";
+    }
+
+    internal static bool TryDecodeToken(
+        string input,
+        int legacyPasswordSize,
+        out int tokenId,
+        out string password)
+    {
+        tokenId = default;
+        password = null;
+
+        if (string.IsNullOrEmpty(input))
+        {
+            return false;
+        }
+
+        if (input.StartsWith(VersionTwoTokenPrefix, StringComparison.Ordinal))
+        {
+            return TryDecodeVersionTwoToken(input, out tokenId, out password);
+        }
+
+        try
+        {
+            byte[] tokenBytes = WebEncoders.Base64UrlDecode(input);
+            if (tokenBytes.Length != CalculateTokenSizeForPasswordSize(legacyPasswordSize))
+            {
+                return false;
+            }
+
+            tokenId = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(tokenBytes, 0));
+            password = WebEncoders.Base64UrlEncode(tokenBytes, TokenIdByteCount, legacyPasswordSize);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryDecodeVersionTwoToken(
+        string input,
+        out int tokenId,
+        out string password)
+    {
+        tokenId = default;
+        password = null;
+
+        int tokenIdStart = VersionTwoTokenPrefix.Length;
+        int passwordSeparator = input.IndexOf('.', tokenIdStart);
+        if (passwordSeparator <= tokenIdStart || passwordSeparator == input.Length - 1)
+        {
+            return false;
+        }
+
+        if (input.IndexOf('.', passwordSeparator + 1) >= 0)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(
+                input.AsSpan(tokenIdStart, passwordSeparator - tokenIdStart),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out tokenId) ||
+            tokenId < 0)
+        {
+            tokenId = default;
+            return false;
+        }
+
+        password = input.Substring(passwordSeparator + 1);
+        return true;
+    }
 }
 
 public class PersonalAccessTokenAuthenticationHandler<TUser> :
     AuthenticationHandler<PersonalAccessTokenAuthenticationOptions<TUser>> where TUser : class
 {
+    internal const string HisV2ProviderSignature = "DNHP";
+
     public PersonalAccessTokenAuthenticationHandler(
         IOptionsMonitor<PersonalAccessTokenAuthenticationOptions<TUser>> options,
         ILoggerFactory logger,
@@ -57,6 +154,9 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
         set => base.Events = value;
     }
 
+    /// <summary>
+    /// Gets the decoded byte count of a legacy personal access token.
+    /// </summary>
     public int TokenByteCount => PersonalAccessTokenUtilities.CalculateTokenSizeForPasswordSize(Options.PasswordSize);
 
     protected override Task<object> CreateEventsAsync()
@@ -64,38 +164,39 @@ public class PersonalAccessTokenAuthenticationHandler<TUser> :
         return Task.FromResult<object>(new PersonalAccessTokenEvents<TUser>());
     }
 
-    private byte[] GeneratePassword()
+    private static string GeneratePassword()
     {
-        var bytes = new byte[Options.PasswordSize];
-        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(bytes);
-        }
-
-        return bytes;
+        // PATs are service-local credentials, not Azure resource keys, so there is no
+        // cloud, region, or tenant metadata to encode.
+        return IdentifiableSecrets.GenerateCommonAnnotatedKey(
+            base64EncodedSignature: HisV2ProviderSignature,
+            customerManagedKey: false,
+            platformReserved: null,
+            providerReserved: null,
+            longForm: false);
     }
 
     private (int tokenId, string password)? DecodeToken(string input)
     {
-        byte[] tokenBytes = WebEncoders.Base64UrlDecode(input);
-        if (tokenBytes.Length != TokenByteCount)
+        if (!PersonalAccessTokenUtilities.TryDecodeToken(
+                input,
+                Options.PasswordSize,
+                out int tokenId,
+                out string password))
         {
             return null;
         }
 
-        int tokenId = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(tokenBytes, 0));
-        string password = WebEncoders.Base64UrlEncode(tokenBytes, PersonalAccessTokenUtilities.TokenIdByteCount, Options.PasswordSize);
         return (tokenId, password);
     }
 
     public async Task<(int id, string value)> CreateToken(TUser user, string name)
     {
-        byte[] passwordBytes = GeneratePassword();
-        string password = PersonalAccessTokenUtilities.EncodePasswordBytes(passwordBytes);
+        string password = GeneratePassword();
         string hash = PasswordHasher.HashPassword(user, password);
         var context = new SetTokenHashContext<TUser>(Context, user, name, hash);
         int tokenId = await Events.SetTokenHash(context);
-        return (tokenId, PersonalAccessTokenUtilities.EncodeToken(tokenId, passwordBytes));
+        return (tokenId, PersonalAccessTokenUtilities.EncodeVersionTwoToken(tokenId, password));
     }
 
     public async Task<TUser> VerifyToken(string token)
