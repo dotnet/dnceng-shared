@@ -25,6 +25,8 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Preferred,GitHub,AzureStorage
     pool:
       name: NetCore1ESPool-Internal
       image: 1es-windows-2022
@@ -75,16 +77,6 @@ extends:
               displayName: Install Correct .NET Version
               inputs:
                 useGlobalJson: true
-
-            - task: UseDotNet@2
-              displayName: Install .NET Version 3.1
-              inputs:
-                version: 3.1.x
-
-            - task: UseDotNet@2
-              displayName: Install .NET Version 6.0
-              inputs:
-                version: 6.0.x
 
             - task: NuGetToolInstaller@0
               inputs:
