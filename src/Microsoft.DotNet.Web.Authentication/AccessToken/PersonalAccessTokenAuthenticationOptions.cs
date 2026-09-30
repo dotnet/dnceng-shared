@@ -15,6 +15,10 @@ public class PersonalAccessTokenAuthenticationOptions<TUser> : AuthenticationSch
         set => base.Events = value;
     }
 
+    /// <summary>
+    /// Gets or sets the password size used to decode legacy personal access tokens.
+    /// New tokens use the fixed HIS v2 key size.
+    /// </summary>
     public int PasswordSize { get; set; } = DefaultPasswordSize;
 
     public string TokenName { get; set; } = "Bearer";
