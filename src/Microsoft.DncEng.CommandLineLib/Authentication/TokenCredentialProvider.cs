@@ -9,7 +9,7 @@ using Microsoft.DncEng.Configuration.Extensions;
 
 namespace Microsoft.DncEng.CommandLineLib.Authentication;
 
-public class TokenCredentialProvider
+public class TokenCredentialProvider : ITokenCredentialProvider
 {
     private readonly IConsole _console;
     private readonly InteractiveTokenCredentialProvider _interactiveTokenCredentialProvider;
