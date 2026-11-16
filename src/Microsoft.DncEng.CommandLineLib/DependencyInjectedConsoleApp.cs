@@ -44,7 +44,7 @@ public abstract class DependencyInjectedConsoleApp
         services.TryAddSingleton<IConsole, DefaultConsole>();
         services.TryAddSingleton<ISystemClock, SystemClock>();
         services.TryAddSingleton<InteractiveTokenCredentialProvider>();
-        services.TryAddSingleton<TokenCredentialProvider>();
+        services.TryAddSingleton<ITokenCredentialProvider, TokenCredentialProvider>();
         services.AddLogging(ConfigureLogging);
 
         services.TryAddSingleton<ITelemetryInitializer>(provider => provider.GetRequiredService<InteractiveTokenCredentialProvider>());
